@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Renew Scholarship | Scholar App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #f0e8ff;
+            font-family: 'Poppins', sans-serif;
+            color: #2d2242;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .navbar {
+            background: white;
+            padding: 20px 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 15px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar h1 {
+            color: #9b59b6;
+            font-size: 24px;
+        }
+        .navbar a {
+            background-color: #e0e0e0;
+            color: #333;
+            padding: 8px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        .navbar a:hover {
+            background-color: #d0d0d0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .header-card {
+            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 25px rgba(155, 89, 182, 0.3);
+        }
+        .header-card h2 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        .header-card p {
+            font-size: 16px;
+            opacity: 0.95;
+        }
+        .form-card {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .alert {
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 10px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border-left: 4px solid #48bb78;
+        }
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #f56565;
+        }
+        .section-title {
+            color: #9b59b6;
+            font-size: 20px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0e8ff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .form-group {
+            margin-bottom: 25px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .required {
+            color: #f56565;
+            margin-left: 3px;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #9b59b6;
+            box-shadow: 0 0 0 3px rgba(155, 89, 182, 0.1);
+        }
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .hint {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .info-box {
+            background: #e7d6f5;
+            border-left: 4px solid #9b59b6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            font-size: 14px;
+            color: #6f42c1;
+        }
+        .info-box strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffa500;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            font-size: 14px;
+            color: #856404;
+        }
+        .warning-box strong {
+            display: block;
+            margin-bottom: 8px;
+        }
+        .form-group input[type="file"] {
+            padding: 10px;
+            border: 2px dashed #e0e0e0;
+            background: #fafafa;
+            cursor: pointer;
+        }
+        .form-group input[type="file"]:hover {
+            border-color: #9b59b6;
+            background: #f5f0ff;
+        }
+        .file-preview {
+            margin-top: 15px;
+            display: none;
+        }
+        .file-preview.active {
+            display: block;
+        }
+        .preview-container {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .preview-image {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+        }
+        .preview-info {
+            flex: 1;
+        }
+        .preview-info .filename {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .preview-info .filesize {
+            font-size: 12px;
+            color: #888;
+        }
+        .remove-file {
+            background: #f56565;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+        .remove-file:hover {
+            background: #e53e3e;
+        }
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 35px;
+            padding-top: 25px;
+            border-top: 2px solid #f0f0f0;
+        }
+        .btn {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+            color: white;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(155, 89, 182, 0.4);
+        }
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .btn-group {
+                flex-direction: column-reverse;
+            }
+            .navbar {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            .header-card {
+                padding: 30px 20px;
+            }
+            .form-card {
+                padding: 25px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>🔄 Scholarship Renewal</h1>
+        <a href="/student_dashboard">← Back to Dashboard</a>
+    </nav>
+
+    <div class="container">
+        <div class="header-card">
+            <h2>Renew Your Scholarship</h2>
+            <p>Continue your journey as a scholar. Update your information and maintain your scholarship status.</p>
+        </div>
+
+        <div class="form-card">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            <span style="font-size: 20px;">{{ '✓' if category == 'success' else '⚠' }}</span>
+                            <span>{{ message }}</span>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="info-box">
+                <strong>🔄 Renewal Requirements:</strong>
+                • You must be a current scholarship recipient<br>
+                • Maintain required GWA (General Weighted Average)<br>
+                • Submit updated documents for this academic year<br>
+                • Provide your current academic performance
+            </div>
+
+            <form method="POST" enctype="multipart/form-data">
+                <!-- Personal Information Section -->
+                <div class="section-title">
+                    <span>👤</span>
+                    <span>Personal Information</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="full_name">Full Name <span class="required">*</span></label>
+                    <input type="text" id="full_name" name="full_name" required 
+                           placeholder="Juan Dela Cruz">
+                    <div class="hint">💡 Enter your complete name as it appears on official documents</div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="student_id">Student ID Number <span class="required">*</span></label>
+                        <input type="text" id="student_id" name="student_id" required 
+                               placeholder="2024-12345">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="contact_number">Contact Number <span class="required">*</span></label>
+                        <input type="tel" id="contact_number" name="contact_number" required 
+                               placeholder="09171234567" pattern="[0-9]{11}">
+                        <div class="hint">📱 11-digit mobile number</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="address">Complete Address <span class="required">*</span></label>
+                    <input type="text" id="address" name="address" required 
+                           placeholder="House No., Street, Barangay, Municipality, Province">
+                    <div class="hint">📍 Include complete address details</div>
+                </div>
+
+                <!-- Academic Information Section -->
+                <div class="section-title" style="margin-top: 40px;">
+                    <span>🎓</span>
+                    <span>Current Academic Information</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="course">Course/Program <span class="required">*</span></label>
+                    <input type="text" id="course" name="course" required 
+                           placeholder="BS Computer Science">
+                    <div class="hint">📚 Enter your current course name</div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="year_level">Current Year Level <span class="required">*</span></label>
+                        <select id="year_level" name="year_level" required>
+                            <option value="">-- Select Year Level --</option>
+                            <option value="7th Grade">7th Year</option>
+                            <option value="8th Grade">8th Year</option>
+                            <option value="9th Grade">9th Year</option>
+                            <option value="10th Grade">10th Year</option>
+                            <option value="1st Year">1st Year</option>
+                            <option value="2nd Year">2nd Year</option>
+                            <option value="3rd Year">3rd Year</option>
+                            <option value="4th Year">4th Year</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="gwa">Current GWA (General Weighted Average) <span class="required">*</span></label>
+                        <input type="number" id="gwa" name="gwa" step="0.01" min="1.00" max="5.00" required 
+                               placeholder="1.75">
+                        <div class="hint">📊 Range: 1.00 - 5.00</div>
+                    </div>
+                </div>
+
+                <!-- Updated Documents Section -->
+                <div class="section-title" style="margin-top: 40px;">
+                    <span>📎</span>
+                    <span>Updated Documents for Renewal</span>
+                </div>
+
+                <div class="warning-box">
+                    <strong>📄 Document Upload Requirements:</strong>
+                    • All documents must be current/updated for this academic year<br>
+                    • Files must be in image format (JPG, PNG) or PDF<br>
+                    • Maximum file size: 5MB per document<br>
+                    • Ensure all documents are clear and readable
+                </div>
+
+                <div class="form-group">
+                    <label for="school_id">Updated School ID <span class="required">*</span></label>
+                    <input type="file" id="school_id" name="school_id" required 
+                           accept="image/*,.pdf" onchange="previewFile(this, 'school_id_preview')">
+                    <div class="hint">🆔 Upload current School ID for this academic year</div>
+                    <div id="school_id_preview" class="file-preview"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_picture">Recent 2x2 ID Picture <span class="required">*</span></label>
+                    <input type="file" id="id_picture" name="id_picture" required 
+                           accept="image/*" onchange="previewFile(this, 'id_picture_preview')">
+                    <div class="hint">📷 Recent photo (taken within the last 6 months)</div>
+                    <div id="id_picture_preview" class="file-preview"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="birth_certificate">Birth Certificate <span class="required">*</span></label>
+                    <input type="file" id="birth_certificate" name="birth_certificate" required 
+                           accept="image/*,.pdf" onchange="previewFile(this, 'birth_certificate_preview')">
+                    <div class="hint">📋 PSA or NSO certified birth certificate</div>
+                    <div id="birth_certificate_preview" class="file-preview"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="grades">Latest Certificate of Grades <span class="required">*</span></label>
+                    <input type="file" id="grades" name="grades" required
+                           accept="image/*,.pdf" onchange="previewFile(this, 'grades_preview')">
+                    <div class="hint">📊 Most recent grades showing current GWA</div>
+                    <div id="grades_preview" class="file-preview"></div>
+                </div>
+
+                <!-- Renewal Justification Section -->
+                <div class="section-title" style="margin-top: 40px;">
+                    <span>💭</span>
+                    <span>Renewal Statement</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="reason">Why should your scholarship be renewed? <span class="required">*</span></label>
+                    <textarea id="reason" name="reason" required 
+                              placeholder="Share your academic progress, achievements, challenges overcome, and future goals. Explain how the scholarship has helped you and why you deserve its continuation. Be honest and detailed."></textarea>
+                    <div class="hint">✍️ Minimum 50 characters. Explain your progress and continued need</div>
+                </div>
+
+                <div class="warning-box">
+                    <strong>⚠️ Important Reminders:</strong>
+                    • Review all information carefully before submitting<br>
+                    • Ensure your GWA meets the minimum requirement<br>
+                    • All documents must be current and valid<br>
+                    • Your renewal application will be reviewed by the admin<br>
+                    • You will receive notification of the decision
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" onclick="window.location.href='/student_dashboard'">
+                        <span>←</span>
+                        <span>Cancel</span>
+                    </button>
+                    <button type="submit" class="btn btn-primary" onclick="return confirmSubmit()">
+                        <span>🔄</span>
+                        <span>Submit Renewal Application</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // File preview function
+        function previewFile(input, previewId) {
+            const preview = document.getElementById(previewId);
+            const file = input.files[0];
+            
+            if (file) {
+                // Check file size (5MB max)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('File size must be less than 5MB!');
+                    input.value = '';
+                    return;
+                }
+
+                const reader = new FileReader();
+                const fileSize = (file.size / 1024).toFixed(2); // Convert to KB
+                
+                reader.onload = function(e) {
+                    const isPDF = file.type === 'application/pdf';
+                    const imgSrc = isPDF ? 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MCIgaGVpZ2h0PSI4MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmNTY1NjUiIHN0cm9rZS13aWR0aD0iMiI+PHBhdGggZD0iTTEzIDJINmEyIDIgMCAwIDAtMiAydjE2YTIgMiAwIDAgMCAyIDJoMTJhMiAyIDAgMCAwIDItMlY5eiI+PC9wYXRoPjxwb2x5bGluZSBwb2ludHM9IjEzIDIgMTMgOSAyMCA5Ij48L3BvbHlsaW5lPjwvc3ZnPg==' : e.target.result;
+                    
+                    preview.innerHTML = `
+                        <div class="preview-container">
+                            <img src="${imgSrc}" alt="Preview" class="preview-image">
+                            <div class="preview-info">
+                                <div class="filename">📎 ${file.name}</div>
+                                <div class="filesize">Size: ${fileSize} KB</div>
+                            </div>
+                            <button type="button" class="remove-file" onclick="removeFile('${input.id}', '${previewId}')">
+                                Remove
+                            </button>
+                        </div>
+                    `;
+                    preview.classList.add('active');
+                };
+                
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function removeFile(inputId, previewId) {
+            document.getElementById(inputId).value = '';
+            const preview = document.getElementById(previewId);
+            preview.innerHTML = '';
+            preview.classList.remove('active');
+        }
+
+        function confirmSubmit() {
+            const reason = document.getElementById('reason').value;
+            if (reason.length < 50) {
+                alert('Please provide a more detailed renewal statement (at least 50 characters).');
+                return false;
+            }
+
+            // Check required files
+            const requiredFiles = ['school_id', 'id_picture', 'birth_certificate', 'grades'];
+            for (let fileId of requiredFiles) {
+                if (!document.getElementById(fileId).files.length) {
+                    alert('Please upload all required documents!');
+                    document.getElementById(fileId).focus();
+                    return false;
+                }
+            }
+            
+            return confirm('Are you sure you want to submit this renewal application? Please review all information and documents carefully before proceeding.');
+        }
+
+        // Auto-format phone number
+        document.getElementById('contact_number').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 11) {
+                value = value.slice(0, 11);
+            }
+            e.target.value = value;
+        });
+
+        // GWA validation
+        document.getElementById('gwa').addEventListener('blur', function(e) {
+            const value = parseFloat(e.target.value);
+            if (value < 1.0 || value > 5.0) {
+                alert('GWA must be between 1.00 and 5.00');
+                e.target.value = '';
+            }
+        });
+    </script>
+</body>
+</html>

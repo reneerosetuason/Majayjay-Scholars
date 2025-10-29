@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | MajayjayScholars</title>
+    <!-- Using a Google Font for better aesthetics -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Global Styles */
+        body {
+            background-color: #ede4ff; /* Light purple background */
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* New Wrapper for the Two-Column Layout */
+        .wrapper {
+            display: flex;
+            width: 100%;
+            max-width: 900px; /* Max size for the entire card */
+            height: 600px;
+            max-height: 90vh; /* Ensure it fits on smaller screens vertically */
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            overflow: hidden; /* Keeps content inside the rounded corners */
+        }
+
+        /* Left Side: Image */
+        .image-side {
+            flex: 2; /* Takes 40% of the space */
+            /* *** CHANGE THIS URL TO YOUR IMAGE URL *** */
+            background-image: ('assets/majayjay_logo.jpg');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            padding: 20px;
+        }
+        
+        /* Right Side: Form Container */
+        .form-side {
+            flex: 3; /* Takes 60% of the space */
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        h2 {
+            color: #5b4ac7;
+            margin-bottom: 25px;
+            font-weight: 700;
+            font-size: 1.75rem;
+        }
+        
+        /* Message/Alert Styling (Enhanced) */
+        .alert {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            text-align: left;
+        }
+        .alert-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .alert-error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .alert-warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .alert-info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+
+        /* Form Inputs and Button */
+        form {
+            width: 100%;
+            max-width: 300px; /* Constraint on form width */
+        }
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+        input:focus {
+            outline: none;
+            border-color: #7a5af5;
+        }
+        button {
+            width: 100%;
+            background-color: #7a5af5;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+        button:hover {
+            background-color: #6745d1;
+        }
+        button:active {
+            transform: scale(0.99);
+        }
+        
+        a {
+            color: #7a5af5;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        a:hover {
+            color: #5b4ac7;
+            text-decoration: underline;
+        }
+
+        /* Responsive Design: Stack columns on smaller screens */
+        @media (max-width: 768px) {
+            .wrapper {
+                flex-direction: column;
+                height: auto;
+                max-height: none;
+                width: 95%;
+                padding: 0;
+            }
+
+            .image-side {
+                display: none; /* Hide the image on small mobile screens */
+            }
+
+            .form-side {
+                flex: 1;
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Left Column: Image -->
+        <div class="image-side">
+            <!-- This is where your actual image would go. 
+                 It's set via the CSS background-image property. -->
+        </div>
+
+        <!-- Right Column: Login Form -->
+        <div class="form-side">
+            <h2>Login to MajayjayScholars</h2>
+
+            <form method="POST">
+                <input type="email" name="email" placeholder="Email" required>
+                <input type="password" name="password" placeholder="Password" required>
+                <button type="submit">Login</button>
+            </form>
+
+            <p style="margin-top: 25px; font-size: 0.9rem;">
+                Don't have an account? <a href="/register">Register</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>
