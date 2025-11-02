@@ -15,12 +15,94 @@
             font-family: 'Poppins', sans-serif;
             color: #2d2242;
             min-height: 100vh;
+            display: flex;
+        }
+
+        /* ===== Sidebar ===== */
+        .sidebar {
+            width: 250px;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            position: fixed;
+            height: 100%;
+            left: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        .sidebar.hide {
+            left: -260px;
+        }
+        .sidebar h2 {
+            color: #5b4ac7;
+            font-size: 22px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .sidebar a {
+            display: block;
+            padding: 12px 15px;
+            color: #333;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+        }
+        .sidebar a:hover {
+            background-color: #7a5af5;
+            color: white;
+        }
+        .sidebar a.active {
+            background-color: #7a5af5;
+            color: white;
+        }
+        .logout-btn {
+            margin-top: auto;
+            background-color: #7a5af5;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+        .logout-btn:hover {
+            background-color: #6745d1;
+        }
+
+        /* ===== Main Content ===== */
+        .main-content {
+            margin-left: 250px;
+            flex: 1;
             padding: 40px 20px;
+            transition: margin-left 0.3s ease;
         }
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
+        .main-content.expanded {
+            margin-left: 0;
         }
+
+        /* ===== Topbar ===== */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+        .menu-btn {
+            font-size: 26px;
+            cursor: pointer;
+            color: #5b4ac7;
+            margin-right: 15px;
+        }
+        .topbar-left {
+            display: flex;
+            align-items: center;
+        }
+
+        /* ===== Existing Styles ===== */
         .header {
             background-color: #7a5af5;
             color: white;
@@ -37,7 +119,7 @@
             font-size: 16px;
             opacity: 0.9;
         }
-        .logout-btn {
+        .logout-btn-top {
             display: inline-block;
             margin-top: 15px;
             padding: 10px 25px;
@@ -48,7 +130,7 @@
             font-weight: 600;
             transition: all 0.3s;
         }
-        .logout-btn:hover {
+        .logout-btn-top:hover {
             background-color: #f0e8ff;
             transform: translateY(-2px);
         }
@@ -108,9 +190,6 @@
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(122, 90, 245, 0.4);
         }
-        .action-btn:active {
-            transform: translateY(0);
-        }
         .alert {
             padding: 15px;
             margin-bottom: 25px;
@@ -122,51 +201,91 @@
             color: #155724;
             border: 1px solid #c3e6cb;
         }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                left: -260px;
+            }
+            .sidebar.active {
+                left: 0;
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h2>Welcome, {{ name }} 🎓</h2>
-            <p>Student Dashboard</p>
-            <a href="/logout" class="logout-btn">Logout</a>
+    <!-- ===== SIDEBAR ===== -->
+    <div class="sidebar" id="sidebar">
+        <h2>🎓 Scholar App</h2>
+        <a href="/student" class="active">🏠 Dashboard</a>
+        <a href="/apply">📝 Apply Scholarship</a>
+        <a href="/renew">🔄 Renew Scholarship</a>
+        <a href="/my_applications">📋 My Applications</a>
+        <a href="/logout" class="logout-btn">Logout</a>
+    </div>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <div class="main-content" id="main-content">
+        <div class="topbar">
+            <div class="topbar-left">
+                <div class="menu-btn" onclick="toggleSidebar()">☰</div>
+                <h2>Student Dashboard</h2>
+            </div>
         </div>
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-
-        <p class="info-text">You can view scholarship requirements, apply, or check your application status here.</p>
-
-        <div class="scholarship-section">
-            <!-- Apply Now Card -->
-            <div class="scholarship-card">
-                <div class="icon">📝</div>
-                <h3>Apply Now</h3>
-                <p>Gusto mo ba maging scholar ni mayor? Apply Now!</p>
-                <a href="/apply" class="action-btn">Apply for Scholarship</a>
+        <div class="container">
+            <div class="header">
+                <h2>Welcome, {{ name }} 🎓</h2>
+                <p>Student Dashboard</p>
+                <a href="/logout" class="logout-btn-top">Logout</a>
             </div>
 
-            <!-- Renew Card -->
-            <div class="scholarship-card">
-                <div class="icon">🔄</div>
-                <h3>Renew</h3>
-                <p>Renew Scholarship</p>
-                <a href="/renew" class="action-btn">Renew Now</a>
-            </div>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
 
-            <!-- My Applications Card -->
-            <div class="scholarship-card">
-                <div class="icon">📋</div>
-                <h3>My Applications</h3>
-                <p>View your application status and history</p>
-                <a href="/my_applications" class="action-btn">View Applications</a>
+            <p class="info-text">You can view scholarship requirements, apply, or check your application status here.</p>
+
+            <div class="scholarship-section">
+                <!-- Apply Now Card -->
+                <div class="scholarship-card">
+                    <div class="icon">📝</div>
+                    <h3>Apply Now</h3>
+                    <p>Gusto mo ba maging scholar ni mayor? Apply Now!</p>
+                    <a href="/apply" class="action-btn">Apply for Scholarship</a>
+                </div>
+
+                <!-- Renew Card -->
+                <div class="scholarship-card">
+                    <div class="icon">🔄</div>
+                    <h3>Renew</h3>
+                    <p>Renew Scholarship</p>
+                    <a href="/renew" class="action-btn">Renew Now</a>
+                </div>
+
+                <!-- My Applications Card -->
+                <div class="scholarship-card">
+                    <div class="icon">📋</div>
+                    <h3>My Applications</h3>
+                    <p>View your application status and history</p>
+                    <a href="/my_applications" class="action-btn">View Applications</a>
+                </div>
             </div>
         </div>
     </div>
+
+    <script>
+        function toggleSidebar() {
+            document.getElementById("sidebar").classList.toggle("hide");
+            document.getElementById("main-content").classList.toggle("expanded");
+        }
+    </script>
 </body>
 </html>

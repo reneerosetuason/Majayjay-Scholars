@@ -14,129 +14,114 @@
             background-color: #ede4ff;
             font-family: 'Poppins', sans-serif;
             min-height: 100vh;
+            display: flex;
         }
-        .navbar {
+
+        /* ===== Sidebar ===== */
+        .sidebar {
+            width: 250px;
             background: white;
-            padding: 20px 40px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            position: fixed;
+            height: 100%;
+            left: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        .sidebar.hide {
+            left: -260px;
+        }
+        .sidebar h2 {
+            color: #5b4ac7;
+            font-size: 22px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .sidebar a {
+            display: block;
+            padding: 12px 15px;
+            color: #333;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+        }
+        .sidebar a:hover {
+            background-color: #7a5af5;
+            color: white;
+        }
+        .sidebar a.active {
+            background-color: #7a5af5;
+            color: white;
+        }
+        .logout-btn {
+            margin-top: auto;
+            background-color: #7a5af5;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+        .logout-btn:hover {
+            background-color: #6745d1;
+        }
+
+        /* ===== Main Content ===== */
+        .main-content {
+            margin-left: 250px;
+            flex: 1;
+            padding: 40px;
+            width: 100%;
+            transition: margin-left 0.3s ease;
+        }
+        .main-content.expanded {
+            margin-left: 0;
+        }
+
+        .topbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 40px;
         }
-        .navbar h1 {
+        .menu-btn {
+            font-size: 26px;
+            cursor: pointer;
             color: #5b4ac7;
-            font-size: 24px;
+            margin-right: 15px;
         }
-        .navbar .user-info {
+        .topbar-left {
             display: flex;
             align-items: center;
-            gap: 20px;
         }
-        .navbar .user-info span {
+        .topbar h1 {
+            color: #5b4ac7;
+            font-size: 26px;
+        }
+        .topbar .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .topbar .user-info span {
             color: #333;
         }
-        .navbar .badge {
+        .badge {
             background-color: #7a5af5;
             color: white;
-            padding: 4px 12px;
+            padding: 5px 12px;
             border-radius: 12px;
             font-size: 12px;
             font-weight: 600;
         }
-        .navbar a {
-            background-color: #7a5af5;
-            color: white;
-            padding: 8px 20px;
-            border-radius: 8px;
-            text-decoration: none;
-            transition: background-color 0.3s;
-        }
-        .navbar a:hover {
-            background-color: #6745d1;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
-        .welcome-card {
-            background: white;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .welcome-card h2 {
-            color: #5b4ac7;
-            font-size: 32px;
-            margin-bottom: 10px;
-        }
-        .welcome-card p {
-            color: #666;
-            font-size: 16px;
-        }
-        .alert {
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            font-size: 14px;
-        }
-        .alert-success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        /* Action Cards Section */
-        .action-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 25px;
-            margin-bottom: 40px;
-        }
-        .action-card {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            text-align: center;
-            transition: all 0.3s;
-        }
-        .action-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(122, 90, 245, 0.2);
-        }
-        .action-card .icon {
-            font-size: 48px;
-            margin-bottom: 15px;
-        }
-        .action-card h3 {
-            color: #7a5af5;
-            margin-bottom: 10px;
-            font-size: 20px;
-        }
-        .action-card p {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 20px;
-        }
-        .action-btn {
-            display: inline-block;
-            padding: 10px 25px;
-            background: linear-gradient(135deg, #7a5af5 0%, #6745d1 100%);
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.3s;
-            font-size: 14px;
-        }
-        .action-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(122, 90, 245, 0.4);
-        }
-        
+
+        /* ===== Stats Section ===== */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -160,7 +145,8 @@
             color: #666;
             font-size: 14px;
         }
-        
+
+        /* ===== Users Section ===== */
         .users-section {
             background: white;
             padding: 30px;
@@ -193,79 +179,43 @@
         table tr:hover {
             background-color: #f8f9fa;
         }
-        .badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        .badge-admin {
-            background-color: #7a5af5;
-            color: white;
-        }
-        .badge-student {
-            background-color: #48bb78;
-            color: white;
-        }
 
         @media (max-width: 768px) {
-            .navbar {
-                flex-direction: column;
-                gap: 15px;
-                text-align: center;
+            .sidebar {
+                left: -260px;
             }
-            .navbar .user-info {
-                flex-direction: column;
+            .sidebar.active {
+                left: 0;
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
             }
         }
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <h1>🎓 Scholar App - Admin Panel</h1>
-        <div class="user-info">
-            <span>Welcome, <strong>{{name}}</strong></span>
-            <span class="badge">ADMIN</span>
-            <a href="/logout">Logout</a>
-        </div>
-    </nav>
+    <!-- ===== SIDEBAR ===== -->
+    <div class="sidebar" id="sidebar">
+        <h2>🎓 Scholar App</h2>
+        <a href="/admin" class="active">🏠 Dashboard</a>
+        <a href="/admin/scholars">👥 View My Scholars</a>
+        <a href="/admin/applications">📁 Scholar Records</a>
+        <a href="/admin/pending">⏳ Pending Scholars</a>
+        <a href="#users">🧑‍💻 Users</a>
+        <a href="/logout" class="logout-btn">Logout</a>
+    </div>
 
-    <div class="container">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-
-        <div class="welcome-card">
-            <h2>Admin Dashboard</h2>
-            <p>Manage scholars and system settings</p>
-        </div>
-
-        <!-- Scholar Management Action Cards -->
-        <div class="action-cards">
-            <div class="action-card">
-                <div class="icon">👥</div>
-                <h3>View My Scholars</h3>
-                <p>See all approved scholars and their details</p>
-                <a href="/admin/scholars" class="action-btn">View Scholars</a>
+    <!-- ===== MAIN CONTENT ===== -->
+    <div class="main-content" id="main-content">
+        <div class="topbar">
+            <div class="topbar-left">
+                <div class="menu-btn" onclick="toggleSidebar()">☰</div>
+                <h1>Admin Dashboard</h1>
             </div>
-
-            <div class="action-card">
-                <div class="icon">📁</div>
-                <h3>Scholar Records</h3>
-                <p>Access complete scholarship records and history</p>
-                <a href="/admin/applications" class="action-btn">View Records</a>
-            </div>
-
-            <div class="action-card">
-                <div class="icon">⏳</div>
-                <h3>Pending Scholars</h3>
-                <p>Review and process pending scholarship applications</p>
-                <a href="/admin/pending" class="action-btn">View Pending</a>
+            <div class="user-info">
+                <span>Welcome, <strong>{{ name }}</strong></span>
+                <span class="badge">ADMIN</span>
             </div>
         </div>
 
@@ -284,7 +234,8 @@
             </div>
         </div>
 
-        <div class="users-section">
+        <!-- ===== USERS LIST SECTION ===== -->
+        <div class="users-section" id="users">
             <h3>Registered Users</h3>
             <table>
                 <thead>
@@ -308,5 +259,12 @@
             </table>
         </div>
     </div>
+
+    <script>
+        function toggleSidebar() {
+            document.getElementById("sidebar").classList.toggle("hide");
+            document.getElementById("main-content").classList.toggle("expanded");
+        }
+    </script>
 </body>
 </html>

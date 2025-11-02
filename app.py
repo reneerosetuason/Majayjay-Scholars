@@ -1,17 +1,32 @@
 from flask import Flask, render_template, request, redirect, flash, url_for, session
+import os
+from werkzeug.utils import secure_filename
 import mysql.connector
-from werkzeug.security import generate_password_hash, check_password_hash
-#ehwjahdkjassdbfkajsb,madn
+from datetime import datetime
+
 app = Flask(__name__)
 app.secret_key = "ren02"
+
+# ================== FILE UPLOAD SETTINGS ==================
+UPLOAD_FOLDER = 'static/uploads'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'pdf'}
+
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 # ================== DATABASE CONNECTION ==================
 db = mysql.connector.connect(
     host="localhost",
-    user="root",          # change if needed
-    password="ren123",    # your MySQL password
-    database="usersdb"    # make sure this DB exists
+    user="root",
+    password="ren123",
+    database="usersdb"
 )
+
 
 # ================== ROUTES ==================
 
@@ -26,6 +41,7 @@ def home():
         else:
             return redirect(url_for('student_dashboard'))
     return redirect(url_for('login'))
+
 
 # ---------- REGISTER ----------
 @app.route('/register', methods=['GET', 'POST'])
@@ -46,23 +62,20 @@ def register():
         cursor = db.cursor()
 
         try:
-            # Insert user with default name = email (since no name input)
             cursor.execute("""
                 INSERT INTO users (name, email, password, user_type)
                 VALUES (%s, %s, %s, %s)
             """, (email.split('@')[0], email, password, 'student'))
             db.commit()
-
             flash("Registration successful! You can now log in.", "success")
-            return redirect(url_for('login'))  #Redirects to login after register
-
+            return redirect(url_for('login'))
         except mysql.connector.IntegrityError:
             flash("Email already exists!", "error")
-
         finally:
             cursor.close()
 
     return render_template('register.html')
+
 
 # ---------- LOGIN ----------
 @app.route('/login', methods=['GET', 'POST'])
@@ -76,7 +89,6 @@ def login():
         user = cursor.fetchone()
         cursor.close()
 
-        # Simple password check (plain text)
         if user and user['password'] == password:
             session['user_id'] = user['user_id']
             session['email'] = user['email']
@@ -96,17 +108,15 @@ def login():
 
     return render_template('login.html')
 
+
 # ---------- ADMIN DASHBOARD ----------
 @app.route('/admin')
 def admin_dashboard():
     if session.get('user_type', '').lower() == 'admin':
         cursor = db.cursor(dictionary=True)
-
-        # Fetch all users
         cursor.execute("SELECT user_id, name, email, user_type FROM users")
         users = cursor.fetchall()
 
-        # Fetch logged-in admin info
         cursor.execute("SELECT name FROM users WHERE user_id = %s", (session['user_id'],))
         current_admin = cursor.fetchone()
         cursor.close()
@@ -117,6 +127,7 @@ def admin_dashboard():
     flash("Access denied!", "error")
     return redirect(url_for('login'))
 
+
 # ---------- MAYOR DASHBOARD ----------
 @app.route('/mayor')
 def mayor_dashboard():
@@ -125,17 +136,130 @@ def mayor_dashboard():
     flash("Access denied!", "error")
     return redirect(url_for('login'))
 
+
 # ---------- STUDENT DASHBOARD ----------
 @app.route('/student')
 def student_dashboard():
     if session.get('user_type', '').lower() == 'student':
-        cursor = db.cursor(dictionary=True)
-        cursor.execute("SELECT user_id, name, email, user_type FROM users")
-        users = cursor.fetchall()
-        cursor.close()
-        return render_template('student/student_dashboard.html', users=users)
+        return render_template('student/student_dashboard.html')
     flash("Access denied!", "error")
     return redirect(url_for('login'))
+
+
+# ---------- APPLY (NEW SCHOLARSHIP) ----------
+@app.route('/apply', methods=['GET', 'POST'])
+def apply():
+    if session.get('user_type', '').lower() != 'student':
+        flash("Access denied!", "error")
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        full_name = request.form.get('full_name')
+        student_id = request.form.get('student_id')
+        contact_number = request.form.get('contact_number')
+        address = request.form.get('address')
+        course = request.form.get('course')
+        year_level = request.form.get('year_level')
+        gwa = request.form.get('gwa')
+        reason = request.form.get('reason')
+
+        # Handle files
+        uploaded_files = {}
+        for field in ['school_id', 'id_picture', 'birth_certificate', 'grades']:
+            file = request.files.get(field)
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file.save(filepath)
+                uploaded_files[field] = filename
+            else:
+                uploaded_files[field] = None
+
+        cursor = db.cursor()
+        try:
+            cursor.execute("""
+                INSERT INTO application (
+                    user_id, full_name, student_id, contact_number, address, 
+                    course, year_level, gwa, reason, 
+                    school_id, id_picture, birth_certificate, grades, 
+                    status, submission_date
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'Pending', CURRENT_TIMESTAMP)
+            """, (
+                session['user_id'], full_name, student_id, contact_number, address,
+                course, year_level, gwa, reason,
+                uploaded_files['school_id'], uploaded_files['id_picture'],
+                uploaded_files['birth_certificate'], uploaded_files['grades']
+            ))
+            db.commit()
+            flash("Application submitted successfully!", "success")
+            return redirect(url_for('student_dashboard'))
+        except Exception as e:
+            print("Error inserting application:", e)
+            flash("An error occurred while submitting your application.", "error")
+        finally:
+            cursor.close()
+
+    return render_template('student/apply.html')
+
+
+# ---------- RENEW SCHOLARSHIP ----------
+@app.route('/renew_scholarship', methods=['GET', 'POST'])
+def renew_scholarship():
+    if session.get('user_type', '').lower() != 'student':
+        flash("Access denied!", "error")
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        try:
+            user_id = session.get('user_id')
+
+            full_name = request.form.get('full_name')
+            student_id = request.form.get('student_id')
+            contact_number = request.form.get('contact_number')
+            address = request.form.get('address')
+            course = request.form.get('course')
+            year_level = request.form.get('year_level')
+            gwa = request.form.get('gwa')
+            reason = request.form.get('reason')
+
+            uploaded_files = {}
+            for field in ['school_id', 'id_picture', 'birth_certificate', 'grades']:
+                file = request.files.get(field)
+                if file and allowed_file(file.filename):
+                    filename = secure_filename(file.filename)
+                    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    file.save(filepath)
+                    uploaded_files[field] = filename
+                else:
+                    uploaded_files[field] = None
+
+            cursor = db.cursor()
+            cursor.execute("""
+                INSERT INTO application (
+                    user_id, full_name, student_id, contact_number, address,
+                    course, year_level, gwa, reason,
+                    school_id, id_picture, birth_certificate, grades,
+                    status, submission_date
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'Pending', NOW())
+            """, (
+                user_id, full_name, student_id, contact_number, address,
+                course, year_level, gwa, reason,
+                uploaded_files['school_id'], uploaded_files['id_picture'],
+                uploaded_files['birth_certificate'], uploaded_files['grades']
+            ))
+
+            db.commit()
+            cursor.close()
+            flash("✅ Renewal application submitted successfully!", "success")
+            return redirect(url_for('student_dashboard'))
+
+        except Exception as e:
+            print("Error submitting renewal application:", e)
+            flash("❌ Error submitting renewal application. Please try again.", "error")
+            return redirect(url_for('renew_scholarship'))
+
+    return render_template('student/renew_scholarship.html')
+
 
 # ---------- LOGOUT ----------
 @app.route('/logout')
@@ -143,6 +267,7 @@ def logout():
     session.clear()
     flash("Logged out successfully.", "info")
     return redirect(url_for('login'))
+
 
 # ================== MAIN ==================
 if __name__ == '__main__':
