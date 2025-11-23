@@ -1,470 +1,387 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Apply for Scholarship | Scholar App</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            background-color: #f0e8ff;
-            font-family: 'Poppins', sans-serif;
-            color: #2d2242;
-            min-height: 100vh;
-            padding: 40px 20px;
-        }
-        .navbar {
-            background: white;
-            padding: 20px 40px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            border-radius: 15px;
-            margin-bottom: 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .navbar h1 {
-            color: #7a5af5;
-            font-size: 24px;
-        }
-        .navbar a {
-            background-color: #e0e0e0;
-            color: #333;
-            padding: 8px 20px;
-            border-radius: 8px;
-            text-decoration: none;
-            transition: all 0.3s;
-            font-weight: 500;
-        }
-        .navbar a:hover {
-            background-color: #d0d0d0;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        .header-card {
-            background: linear-gradient(135deg, #7a5af5 0%, #6745d1 100%);
-            color: white;
-            padding: 40px;
-            border-radius: 15px;
-            text-align: center;
-            margin-bottom: 30px;
-            box-shadow: 0 8px 25px rgba(122, 90, 245, 0.3);
-        }
-        .header-card h2 {
-            font-size: 32px;
-            margin-bottom: 10px;
-        }
-        .header-card p {
-            font-size: 16px;
-            opacity: 0.95;
-        }
-        .form-card {
-            background: white;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        .alert {
-            padding: 15px;
-            margin-bottom: 25px;
-            border-radius: 10px;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .alert-success {
-            background-color: #d4edda;
-            color: #155724;
-            border-left: 4px solid #48bb78;
-        }
-        .alert-error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border-left: 4px solid #f56565;
-        }
-        .section-title {
-            color: #7a5af5;
-            font-size: 20px;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #f0e8ff;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .form-group {
-            margin-bottom: 25px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 600;
-            font-size: 14px;
-        }
-        .required {
-            color: #f56565;
-            margin-left: 3px;
-        }
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 14px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-family: 'Poppins', sans-serif;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #7a5af5;
-            box-shadow: 0 0 0 3px rgba(122, 90, 245, 0.1);
-        }
-        .form-group textarea {
-            min-height: 120px;
-            resize: vertical;
-        }
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        .hint {
-            font-size: 12px;
-            color: #888;
-            margin-top: 5px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .info-box {
-            background: #e8f5e9;
-            border-left: 4px solid #48bb78;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 25px;
-            font-size: 14px;
-            color: #2e7d32;
-        }
-        .info-box strong {
-            display: block;
-            margin-bottom: 5px;
-        }
-        .btn-group {
-            display: flex;
-            gap: 15px;
-            margin-top: 35px;
-            padding-top: 25px;
-            border-top: 2px solid #f0f0f0;
-        }
-        .btn {
-            flex: 1;
-            padding: 16px;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, #7a5af5 0%, #6745d1 100%);
-            color: white;
-        }
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(122, 90, 245, 0.4);
-        }
-        .btn-primary:active {
-            transform: translateY(0);
-        }
-        .btn-secondary {
-            background: #e0e0e0;
-            color: #333;
-        }
-        .btn-secondary:hover {
-            background: #d0d0d0;
-        }
-        
-        /* Progress Steps */
-        .progress-steps {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 30px;
-            position: relative;
-        }
-        .step {
-            flex: 1;
-            text-align: center;
-            position: relative;
-        }
-        .step-circle {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #e0e0e0;
-            margin: 0 auto 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            color: #666;
-        }
-        .step.active .step-circle {
-            background: #7a5af5;
-            color: white;
-        }
-        .step-label {
-            font-size: 12px;
-            color: #666;
-        }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Apply Scholarship | Scholar App</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-        @media (max-width: 600px) {
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-            .btn-group {
-                flex-direction: column-reverse;
-            }
-            .navbar {
-                flex-direction: column;
-                gap: 15px;
-                text-align: center;
-            }
-            .header-card {
-                padding: 30px 20px;
-            }
-            .form-card {
-                padding: 25px 20px;
-            }
-        }
-    </style>
+<style>
+    :root{
+        --primary:#9b59b6;
+        --primary-dark:#8e44ad;
+        --muted:#e0e0e0;
+        --bg:#f0e8ff;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Poppins',sans-serif;background:var(--bg);color:#2d2242;min-height:100vh;overflow-x:hidden}
+
+/* Sidebar styles are in layout/sidebar.html */
+
+/* Fixed Navbar - adjusted for 250px sidebar */
+.navbar{
+    position:fixed;
+    left:250px;
+    top:0;
+    right:0;
+    background:#fff;
+    padding:16px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    box-shadow:0 4px 18px rgba(155,89,182,0.06);
+    z-index:900;
+    transition:left 0.3s ease;
+}
+
+.sidebar.hide ~ .navbar{
+    left:0;
+}
+
+.navbar h1{color:var(--primary);font-size:20px;display:flex;align-items:center;gap:10px}
+.navbar .btn {padding:8px 14px;border-radius:8px;background:var(--muted);color:#222;text-decoration:none;font-weight:600;border:none;cursor:pointer}
+
+.toggle-btn{
+    background:transparent;
+    border:none;
+    font-size:24px;
+    color:var(--primary);
+    cursor:pointer;
+    padding:5px 10px;
+    border-radius:6px;
+    transition:0.3s;
+}
+
+.toggle-btn:hover{
+    background:rgba(155,89,182,0.1);
+}
+
+/* Page content - adjusted for 250px sidebar */
+.page {
+    margin-left:250px;
+    margin-top:70px;
+    padding:28px 32px;
+    transition:margin-left 0.3s ease;
+}
+
+.sidebar.hide ~ .page{
+    margin-left:0;
+}
+
+/* Header card */
+.header-card{
+    background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+    color:#fff;padding:28px;border-radius:12px;text-align:center;margin-bottom:22px;box-shadow:0 8px 25px rgba(155,89,182,0.14);max-width:850px;margin-left:auto;margin-right:auto;margin-bottom:22px
+}
+.header-card h2{font-size:26px;margin-bottom:6px}
+
+/* Form card */
+.form-card{background:#fff;padding:26px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,0.06);max-width:850px;margin:0 auto}
+.section-title{display:flex;gap:10px;align-items:center;color:var(--primary);font-weight:600;margin-bottom:14px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-weight:700;margin-bottom:8px}
+input[type="text"], input[type="tel"], input[type="number"], select, textarea, input[type="file"]{
+    width:100%;padding:12px;border:2px solid #eee;border-radius:10px;font-size:14px;
+}
+input:focus, select:focus, textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 6px rgba(155,89,182,0.06)}
+textarea{min-height:120px;resize:vertical}
+.hint{font-size:12px;color:#777;margin-top:6px}
+.info-box{background:#e8f5e9;border-left:4px solid #48bb78;padding:12px;border-radius:8px;margin-bottom:16px;color:#1f7a3a}
+.alert{padding:12px;border-radius:10px;margin-bottom:14px}
+.alert-success{background:#d4edda;color:#155724;border-left:4px solid #48bb78}
+.alert-error{background:#f8d7da;color:#721c24;border-left:4px solid #f56565}
+
+/* file preview (simple) */
+.file-preview{margin-top:8px}
+.preview-container{display:flex;align-items:center;gap:12px;background:#fcfcfc;padding:8px;border-radius:8px;border:1px solid #eee}
+.preview-image{width:48px;height:48px;object-fit:cover;border-radius:6px}
+.remove-file{background:#f56565;color:#fff;border:none;padding:8px;border-radius:8px;cursor:pointer}
+
+/* buttons */
+.btn-group{display:flex;gap:14px;margin-top:18px}
+.btn{flex:1;padding:12px;border-radius:10px;font-weight:700;border:none;cursor:pointer}
+.btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff}
+.btn-secondary{background:#e9e9e9;color:#333;text-decoration:none;display:flex;align-items:center;justify-content:center}
+@media(max-width:900px){ 
+    .page{margin-left:16px;padding:16px;margin-top:70px} 
+    .navbar{left:0}
+    .form-row{grid-template-columns:1fr} 
+    .sidebar{position:relative;width:100%;height:auto;box-shadow:none;flex-direction:row;gap:12px;align-items:center;padding:12px;transform:none} 
+    .sidebar.hide{transform:none}
+    .sidebar a{display:inline-block;padding:8px;font-size:13px} 
+    .logout-btn{margin-top:0} 
+}
+</style>
 </head>
 <body>
-    <nav class="navbar">
-        <h1>📝 Scholarship Application</h1>
-        <a href="/student_dashboard">← Back to Dashboard</a>
-    </nav>
 
-    <div class="container">
-        <div class="header-card">
-            <h2>Apply for Mayor's Scholarship</h2>
-            <p>Gusto mo ba maging scholar ni mayor? Fill out this form completely and honestly.</p>
-        </div>
+<!-- SIDEBAR -->
+{% include 'layout/sidebar.html' %}
 
-        <div class="form-card">
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }}">
-                            <span style="font-size: 20px;">{{ '✓' if category == 'success' else '⚠' }}</span>
-                            <span>{{ message }}</span>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
+<!-- NAVBAR -->
+<div class="navbar">
+    <h1>
+        <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+        📝 Apply for Scholarship
+    </h1>
+</div>
 
-            <div class="info-box">
-                <strong>📋 Before you start:</strong>
-                Make sure you have all required information ready. All fields marked with <span class="required">*</span> are mandatory.
-            </div>
-
-            <form method="POST">
-                <!-- Personal Information Section -->
-                <div class="section-title">
-                    <span>👤</span>
-                    <span>Personal Information</span>
-                </div>
-
-                <div class="form-group">
-                    <label for="full_name">Full Name <span class="required">*</span></label>
-                    <input type="text" id="full_name" name="full_name" required 
-                           placeholder="Juan Dela Cruz">
-                    <div class="hint">💡 Enter your complete name as it appears on official documents</div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="student_id">Student ID Number <span class="required">*</span></label>
-                        <input type="text" id="student_id" name="student_id" required 
-                               placeholder="2024-12345">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="contact_number">Contact Number <span class="required">*</span></label>
-                        <input type="tel" id="contact_number" name="contact_number" required 
-                               placeholder="09171234567" pattern="[0-9]{11}">
-                        <div class="hint">📱 11-digit mobile number</div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="address">Complete Address <span class="required">*</span></label>
-                    <input type="text" id="address" name="address" required 
-                           placeholder="House No., Street, Barangay, Municipality, Province">
-                    <div class="hint">📍 Include complete address details</div>
-                </div>
-
-                <!-- Academic Information Section -->
-                <div class="section-title" style="margin-top: 40px;">
-                    <span>🎓</span>
-                    <span>Academic Information</span>
-                </div>
-
-                <div class="form-group">
-                    <label for="course">Course/Program <span class="required">*</span></label>
-                    <input type="text" id="course" name="course" required 
-                           placeholder="BS Computer Science">
-                    <div class="hint">📚 Enter your complete course name</div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="year_level">Year Level <span class="required">*</span></label>
-                        <select id="year_level" name="year_level" required>
-                            <option value="">-- Select Year Level --</option>
-                            <option value="7th Grade">7th Year</option>
-                            <option value="8th Grade">8th Year</option>
-                            <option value="9th Grade">9th Year</option>
-                            <option value="10th Grade">10th Year</option>
-                            <option value="1st Year">1st Year</option>
-                            <option value="2nd Year">2nd Year</option>
-                            <option value="3rd Year">3rd Year</option>
-                            <option value="4th Year">4th Year</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="gwa">General Weighted Average (GWA) <span class="required">*</span></label>
-                        <input type="number" id="gwa" name="gwa" step="0.01" min="1.00" max="5.00" required 
-                               placeholder="1.75">
-                        <div class="hint">📊 Range: 1.00 - 5.00</div>
-                    </div>
-                </div>
-
-                <!-- Document Upload Section -->
-                <div class="section-title" style="margin-top: 40px;">
-                    <span>📎</span>
-                    <span>Required Documents</span>
-                </div>
-
-                <div class="info-box" style="background: #e3f2fd; border-left-color: #2196f3; color: #1565c0;">
-                    <strong>📄 Upload Requirements:</strong>
-                    • All documents must be in image format (JPG, PNG, PDF)<br>
-                    • Maximum file size: 5MB per document<br>
-                    • Make sure images are clear and readable
-                </div>
-
-                <div class="form-group">
-                    <label for="school_id">School ID (Front & Back) <span class="required">*</span></label>
-                    <input type="file" id="school_id" name="school_id" required 
-                           accept="image/*,.pdf" onchange="previewFile(this, 'school_id_preview')">
-                    <div class="hint">🆔 Upload clear photo of your School ID (both sides)</div>
-                    <div id="school_id_preview" class="file-preview"></div>
-                </div>
-
-                <div class="form-group">
-                    <label for="id_picture">2x2 ID Picture <span class="required">*</span></label>
-                    <input type="file" id="id_picture" name="id_picture" required 
-                           accept="image/*" onchange="previewFile(this, 'id_picture_preview')">
-                    <div class="hint">📷 Recent 2x2 ID picture with white background</div>
-                    <div id="id_picture_preview" class="file-preview"></div>
-                </div>
-
-                <div class="form-group">
-                    <label for="birth_certificate">Birth Certificate <span class="required">*</span></label>
-                    <input type="file" id="birth_certificate" name="birth_certificate" required 
-                           accept="image/*,.pdf" onchange="previewFile(this, 'birth_certificate_preview')">
-                    <div class="hint">📋 PSA or NSO certified birth certificate</div>
-                    <div id="birth_certificate_preview" class="file-preview"></div>
-                </div>
-
-                <div class="form-group">
-                    <label for="grades">Certificate of Grades/Report Card</label>
-                    <input type="file" id="grades" name="grades" 
-                           accept="image/*,.pdf" onchange="previewFile(this, 'grades_preview')">
-                    <div class="hint">📊 Latest grades or report card (optional but recommended)</div>
-                    <div id="grades_preview" class="file-preview"></div>
-                </div>
-
-                <!-- Scholarship Justification Section -->
-                <div class="section-title" style="margin-top: 40px;">
-                    <span>💭</span>
-                    <span>Tell Us Your Story</span>
-                </div>
-
-                <div class="form-group">
-                    <label for="reason">Why do you deserve this scholarship? <span class="required">*</span></label>
-                    <textarea id="reason" name="reason" required 
-                              placeholder="Share your story... Tell us about your academic goals, financial situation, and why receiving this scholarship would make a difference in your life. Be honest and detailed."></textarea>
-                    <div class="hint">✍️ Minimum 50 characters. Be sincere and detailed.</div>
-                </div>
-
-                <div class="info-box" style="background: #fff3cd; border-left-color: #ffa500; color: #856404;">
-                    <strong>⚠️ Important Reminders:</strong>
-                    • Double-check all information before submitting<br>
-                    • Make sure your GWA is accurate<br>
-                    • Your application will be reviewed by the admin<br>
-                    • You will be notified of the decision via email
-                </div>
-
-                <div class="btn-group">
-                    <button type="button" class="btn btn-secondary" onclick="window.location.href='/student_dashboard'">
-                        <span>←</span>
-                        <span>Cancel</span>
-                    </button>
-                    <button type="submit" class="btn btn-primary" onclick="return confirmSubmit()">
-                        <span>📤</span>
-                        <span>Submit Application</span>
-                    </button>
-                </div>
-            </form>
-        </div>
+<!-- MAIN PAGE -->
+<div class="page">
+    <div class="header-card">
+        <h2>Scholarship Application Form</h2>
+        <p>Complete the form honestly. Fields marked with * are required.</p>
     </div>
 
-    <script>
-        function confirmSubmit() {
-            const reason = document.getElementById('reason').value;
-            if (reason.length < 50) {
-                alert('Please provide a more detailed reason (at least 50 characters).');
-                return false;
-            }
-            
-            return confirm('Are you sure you want to submit this application? Please review all information carefully before proceeding.');
-        }
+    <div class="form-card">
+        <div class="info-box">
+            <strong>📋 Before you start</strong>
+            Make sure your documents are ready. Max file size 5MB. Supported: JPG, PNG, PDF.
+        </div>
 
-        // Auto-format phone number
-        document.getElementById('contact_number').addEventListener('input', function(e) {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length > 11) {
-                value = value.slice(0, 11);
-            }
-            e.target.value = value;
-        });
+        <form action="/apply" method="POST" enctype="multipart/form-data">
+            <!-- Personal -->
+            <div class="section-title">👤 Personal Information</div>
 
-        // GWA validation
-        document.getElementById('gwa').addEventListener('blur', function(e) {
-            const value = parseFloat(e.target.value);
-            if (value < 1.0 || value > 5.0) {
-                alert('GWA must be between 1.00 and 5.00');
-                e.target.value = '';
-            }
-        });
-    </script>
+            <label style="font-weight:700;margin-bottom:8px;display:block">Full Name</label>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="first_name">First Name <span style="color:#f56565">*</span></label>
+                    <input id="first_name" name="first_name" type="text" required placeholder="Juan">
+                </div>
+                <div class="form-group">
+                    <label for="middle_name">Middle Name</label>
+                    <input id="middle_name" name="middle_name" type="text" placeholder="S.">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="last_name">Last Name <span style="color:#f56565">*</span></label>
+                <input id="last_name" name="last_name" type="text" required placeholder="Dela Cruz">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="student_id">Student ID <span style="color:#f56565">*</span></label>
+                    <input id="student_id" name="student_id" type="text" required placeholder="2024-12345">
+                </div>
+                <div class="form-group">
+                    <label for="contact_number">Contact Number <span style="color:#f56565">*</span></label>
+                    <input id="contact_number" name="contact_number" type="tel" required placeholder="09171234567" pattern="[0-9]{11}">
+                    <div class="hint">11-digit mobile number</div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="scholarship_type">Scholarship Type <span style="color:#f56565">*</span></label>
+                <select id="scholarship_type" name="scholarship_type" required>
+                    <option value="">Select Scholarship Type</option>
+                    <option value="Academic Scholar">Academic Scholar</option>
+                    <option value="Athletic Scholar">Athletic Scholar</option>
+                    <option value="Arts & Culture Scholar">Arts & Culture Scholar</option>
+                </select>
+            </div>
+
+            <!-- Address -->
+            <div class="section-title" style="margin-top:14px">📍 Address</div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="address">House No. / Street <span style="color:#f56565">*</span></label>
+                    <input id="address" name="address" type="text" required placeholder="Blk 2 Lot 10, Rizal St.">
+                    <div class="hint">Street, house no., etc.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="municipality">Municipality <span style="color:#f56565">*</span></label>
+                    <select id="municipality" name="municipality" required>
+                        <option value="Majayjay">Majayjay</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="barangay">Barangay <span style="color:#f56565">*</span></label>
+                <select id="barangay" name="barangay" required>
+                    <option value="">Select Barangay</option>
+                    <option>Amonoy</option>
+                    <option>Bakia</option>
+                    <option>Balanac</option>
+                    <option>Balayong</option>
+                    <option>Banilad</option>
+                    <option>Banti</option>
+                    <option>Bitaoy</option>
+                    <option>Botocan</option>
+                    <option>Bukal</option>
+                    <option>Burgos</option>
+                    <option>Burol</option>
+                    <option>Coralao</option>
+                    <option>Gagalot</option>
+                    <option>Ibabang Banga</option>
+                    <option>Ibabang Bayucain</option>
+                    <option>Ilayang Banga</option>
+                    <option>Ilayang Bayucain</option>
+                    <option>Isabang</option>
+                    <option>Malinao</option>
+                    <option>May-it</option>
+                    <option>Munting Kawayan</option>
+                    <option>Olla</option>
+                    <option>Oobi</option>
+                    <option>Origuel (Poblacion)</option>
+                    <option>Panalaban</option>
+                    <option>Pangil</option>
+                    <option>Panglan</option>
+                    <option>Piit</option>
+                    <option>Pook</option>
+                    <option>Rizal</option>
+                    <option>San Francisco (Poblacion)</option>
+                    <option>San Isidro</option>
+                    <option>San Miguel (Poblacion)</option>
+                    <option>San Roque</option>
+                    <option>Santa Catalina</option>
+                    <option>Suba</option>
+                    <option>Talortor</option>
+                    <option>Tanawan</option>
+                    <option>Taytay</option>
+                    <option>Villa Nogales</option>
+                </select>
+            </div>
+
+            <!-- Academic -->
+            <div class="section-title" style="margin-top:14px">🎓 Academic Information</div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="course">Course <span style="color:#f56565">*</span></label>
+                    <input id="course" name="course" type="text" required placeholder="BS Computer Science">
+                </div>
+                <div class="form-group">
+                    <label for="year_level">Year Level <span style="color:#f56565">*</span></label>
+                    <select id="year_level" name="year_level" required>
+                        <option value="">Select Year Level</option>
+                        <option>Grade 11</option>
+                        <option>Grade 12</option>
+                        <option>1st Year</option>
+                        <option>2nd Year</option>
+                        <option>3rd Year</option>
+                        <option>4th Year</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="gwa">General Weighted Average (GWA) <span style="color:#f56565">*</span></label>
+                <input id="gwa" name="gwa" type="number" step="0.01" min="1.00" max="5.00" required placeholder="1.75">
+                <div class="hint">Range: 1.00 - 5.00</div>
+            </div>
+
+            <!-- Application Info -->
+            <div class="section-title" style="margin-top:14px">💭 Application Information</div>
+
+            <div class="form-group">
+                <label for="reason">Why do you deserve this scholarship? <span style="color:#f56565">*</span></label>
+                <textarea id="reason" name="reason" rows="3" required placeholder="Explain why you should be awarded this scholarship..."></textarea>
+            </div>
+
+            <!-- Documents -->
+            <div class="section-title" style="margin-top:14px">📎 Upload Requirements</div>
+
+            <div class="form-group">
+                <label for="school_id">School ID <span style="color:#f56565">*</span></label>
+                <input id="school_id" name="school_id" type="file" accept="image/*" onchange="previewFile(this,'idPreview')">
+                <div id="idPreview" class="file-preview"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="id_picture">2x2 ID Picture <span style="color:#f56565">*</span></label>
+                <input id="id_picture" name="id_picture" type="file" accept="image/*" onchange="previewFile(this,'picPreview')">
+                <div id="picPreview" class="file-preview"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="birth_certificate">Birth Certificate <span style="color:#f56565">*</span></label>
+                <input id="birth_certificate" name="birth_certificate" type="file" accept="image/*" onchange="previewFile(this,'birthPreview')">
+                <div id="birthPreview" class="file-preview"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="grades">Copy of Grades <span style="color:#f56565">*</span></label>
+                <input id="grades" name="grades" type="file" accept="image/*" onchange="previewFile(this,'gradesPreview')">
+                <div id="gradesPreview" class="file-preview"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="cor">COR (Certificate of Registration) <span style="color:#f56565">*</span></label>
+                <input id="cor" name="cor" type="file" accept="image/*" onchange="previewFile(this,'corPreview')">
+                <div id="corPreview" class="file-preview"></div>
+            </div>
+
+            <div class="btn-group">
+                <a href="/dashboard" class="btn btn-secondary">← Cancel</a>
+                <button type="submit" class="btn btn-primary">📝 Submit Application</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function toggleSidebar() {
+    const sidebar = document.getElementById("sidebar");
+    sidebar.classList.toggle("hide");
+}
+
+/* basic validations + previews */
+document.getElementById('contact_number')?.addEventListener('input', e=>{
+    let v = e.target.value.replace(/\D/g,'').slice(0,11);
+    e.target.value = v;
+});
+
+document.getElementById('gwa')?.addEventListener('blur', e=>{
+    let val = parseFloat(e.target.value);
+    if(!isNaN(val) && (val < 1.0 || val > 5.0)){ alert('GWA must be between 1.00 and 5.00'); e.target.value=''; }
+});
+
+function previewFile(input, imgId){
+    const file = input.files?.[0];
+    const preview = document.getElementById(imgId);
+    if(!preview) return;
+    
+    if(!file) {
+        preview.innerHTML = '';
+        return;
+    }
+    
+    if(file.size > 5*1024*1024){ 
+        alert('File too large (max 5MB)'); 
+        input.value=''; 
+        return; 
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(ev){
+        const isPDF = file.type === 'application/pdf';
+        const src = isPDF ? '' : ev.target.result;
+        preview.innerHTML = `
+            <div class="preview-container">
+                ${!isPDF ? `<img src="${src}" class="preview-image" alt="preview">` : `<div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;background:#f1f1f1;border-radius:6px">PDF</div>`}
+                <div>
+                    <div style="font-weight:600">${file.name}</div>
+                    <div style="font-size:12px;color:#666">${(file.size/1024).toFixed(1)} KB</div>
+                </div>
+                <button type="button" class="remove-file" onclick="removeFile('${input.id}','${imgId}')">Remove</button>
+            </div>
+        `;
+    };
+    reader.readAsDataURL(file);
+}
+
+function removeFile(inputId, imgId){
+    const input = document.getElementById(inputId);
+    if(input) input.value='';
+    const preview = document.getElementById(imgId);
+    if(preview) preview.innerHTML='';
+}
+</script>
 </body>
 </html>

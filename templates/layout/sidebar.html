@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scholar App Sidebar</title>
+    <style>
+        /* ===== Sidebar General Styles ===== */
+        .sidebar {
+            width: 250px;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        /* Hide sidebar on toggle (if you will use JS later) */
+        .sidebar.hide {
+            left: -260px;
+        }
+        .sidebar h2 {
+            color: #5b4ac7;
+            font-size: 22px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        /* ===== Sidebar Links ===== */
+        .sidebar a {
+            display: block;
+            padding: 12px 15px;
+            color: #333;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: 0.3s;
+            margin-bottom: 10px;
+        }
+        .sidebar a:hover {
+            background-color: #7a5af5;
+            color: #fff;
+        }
+        /* Active Page Highlight */
+        .sidebar a.active {
+            background-color: #7a5af5;
+            color: #fff;
+        }
+        /* Logout Button */
+        .logout-btn {
+            margin-top: auto;
+            background-color: #7a5af5;
+            color: white !important;
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+        .logout-btn:hover {
+            background-color: #6745d1;
+        }
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                left: -260px;
+            }
+            .sidebar.active {
+                left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+    <h2>🎓 Scholar App</h2>
+
+    {% if session.get('user_type') == 'student' %}
+        <a href="/student" class="{{ 'active' if request.path == '/student' else '' }}">🏠 Dashboard</a>
+
+        <a href="/my_applications" class="{{ 'active' if request.path == '/my_applications' else '' }}">
+            📄 My Applications
+        </a>
+
+        <a href="/renew" class="{{ 'active' if request.path == '/renew' else '' }}">
+            🔄 Renew Scholarship
+        </a>
+
+        <a href="/apply" class="{{ 'active' if request.path == '/apply' else '' }}">
+            📝 Apply Scholarship
+        </a>
+
+    {% elif session.get('user_type') == 'mayor' %}
+        <a href="/mayor" class="{{ 'active' if request.path == '/mayor' else '' }}">🏛 Mayor Dashboard</a>
+
+        <a href="/mayor/scholars" class="{{ 'active' if request.path == '/mayor/scholars' else '' }}">
+            👥 View Scholars
+        </a>
+
+        <a href="/mayor/records" class="{{ 'active' if request.path == '/mayor/records' else '' }}">
+            📁 Scholar Records
+        </a>
+
+        <a href="/mayor/pending" class="{{ 'active' if request.path == '/mayor/pending' else '' }}">
+            ⏳ Pending Scholars
+        </a>
+
+    {% elif session.get('user_type') == 'admin' %}
+        <a href="/admin" class="{{ 'active' if request.path == '/admin' else '' }}">🏛 Admin Dashboard</a>
+
+        <a href="/admin/add_admin" class="{{ 'active' if request.path == '/admin/add_admin' else '' }}">
+            👥 Add Admin Account
+        </a>
+
+        <a href="/admin/add_mayor" class="{{ 'active' if request.path == '/admin/add_mayor' else '' }}">
+            📁 Add Mayor Account
+        </a>
+    {% endif %}
+
+    <a href="/logout" class="logout-btn">Logout</a>
+</div>
+
+</body>
+</html>

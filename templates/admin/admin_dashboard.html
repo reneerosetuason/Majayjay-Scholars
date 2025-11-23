@@ -5,11 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard | Scholar App</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background-color: #ede4ff;
             font-family: 'Poppins', sans-serif;
@@ -17,64 +13,9 @@
             display: flex;
         }
 
-        /* ===== Sidebar ===== */
-        .sidebar {
-            width: 250px;
-            background: white;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            position: fixed;
-            height: 100%;
-            left: 0;
-            transition: all 0.3s ease;
-            z-index: 1000;
-        }
-        .sidebar.hide {
-            left: -260px;
-        }
-        .sidebar h2 {
-            color: #5b4ac7;
-            font-size: 22px;
-            margin-bottom: 30px;
-            text-align: center;
-        }
-        .sidebar a {
-            display: block;
-            padding: 12px 15px;
-            color: #333;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 500;
-            transition: all 0.3s;
-            margin-bottom: 10px;
-        }
-        .sidebar a:hover {
-            background-color: #7a5af5;
-            color: white;
-        }
-        .sidebar a.active {
-            background-color: #7a5af5;
-            color: white;
-        }
-        .logout-btn {
-            margin-top: auto;
-            background-color: #7a5af5;
-            color: white;
-            text-align: center;
-            padding: 10px;
-            border-radius: 8px;
-            text-decoration: none;
-            transition: 0.3s;
-        }
-        .logout-btn:hover {
-            background-color: #6745d1;
-        }
-
-        /* ===== Main Content ===== */
+        /* Main Content */
         .main-content {
-            margin-left: 250px;
+            margin-left: 250px; 
             flex: 1;
             padding: 40px;
             width: 100%;
@@ -84,6 +25,7 @@
             margin-left: 0;
         }
 
+        /* Topbar */
         .topbar {
             display: flex;
             justify-content: space-between;
@@ -96,21 +38,15 @@
             color: #5b4ac7;
             margin-right: 15px;
         }
-        .topbar-left {
-            display: flex;
-            align-items: center;
-        }
+        .topbar-left { display: flex; align-items: center; }
         .topbar h1 {
             color: #5b4ac7;
             font-size: 26px;
         }
-        .topbar .user-info {
+        .user-info {
             display: flex;
             align-items: center;
             gap: 15px;
-        }
-        .topbar .user-info span {
-            color: #333;
         }
         .badge {
             background-color: #7a5af5;
@@ -121,7 +57,7 @@
             font-weight: 600;
         }
 
-        /* ===== Stats Section ===== */
+        /* Stats */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -139,14 +75,13 @@
             font-size: 36px;
             font-weight: bold;
             color: #7a5af5;
-            margin-bottom: 5px;
         }
         .stat-card .label {
             color: #666;
             font-size: 14px;
         }
 
-        /* ===== Users Section ===== */
+        /* Users Table */
         .users-section {
             background: white;
             padding: 30px;
@@ -176,57 +111,42 @@
             border-bottom: 1px solid #e0e0e0;
             color: #555;
         }
-        table tr:hover {
-            background-color: #f8f9fa;
-        }
+        table tr:hover { background-color: #f8f9fa; }
 
         @media (max-width: 768px) {
-            .sidebar {
-                left: -260px;
-            }
-            .sidebar.active {
-                left: 0;
-            }
-            .main-content {
-                margin-left: 0;
-                padding: 20px;
-            }
+            .main-content { margin-left: 0; padding: 20px; }
         }
     </style>
 </head>
 <body>
-    <!-- ===== SIDEBAR ===== -->
-    <div class="sidebar" id="sidebar">
-        <h2>🎓 Scholar App</h2>
-        <a href="/admin" class="active">🏠 Dashboard</a>
-        <a href="/admin/scholars">👥 View My Scholars</a>
-        <a href="/admin/applications">📁 Scholar Records</a>
-        <a href="/admin/pending">⏳ Pending Scholars</a>
-        <a href="#users">🧑‍💻 Users</a>
-        <a href="/logout" class="logout-btn">Logout</a>
-    </div>
+
+    <!-- ⭐ Shared Sidebar -->
+    {% include 'layout/sidebar.html' %}
 
     <!-- ===== MAIN CONTENT ===== -->
     <div class="main-content" id="main-content">
+
         <div class="topbar">
             <div class="topbar-left">
                 <div class="menu-btn" onclick="toggleSidebar()">☰</div>
                 <h1>Admin Dashboard</h1>
             </div>
+
             <div class="user-info">
                 <span>Welcome, <strong>{{ name }}</strong></span>
                 <span class="badge">ADMIN</span>
             </div>
         </div>
 
+        <!-- Stats Section -->
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="number">{{ users|length }}</div>
                 <div class="label">Total Users</div>
             </div>
             <div class="stat-card">
-                <div class="number">{{ users|selectattr('user_type', 'equalto', 'admin')|list|length }}</div>
-                <div class="label">Admins</div>
+                <div class="number">{{ users|selectattr('user_type', 'equalto', 'mayor')|list|length }}</div>
+                <div class="label">Mayors</div>
             </div>
             <div class="stat-card">
                 <div class="number">{{ users|selectattr('user_type', 'equalto', 'student')|list|length }}</div>
@@ -234,7 +154,7 @@
             </div>
         </div>
 
-        <!-- ===== USERS LIST SECTION ===== -->
+        <!-- Users List -->
         <div class="users-section" id="users">
             <h3>Registered Users</h3>
             <table>
@@ -249,15 +169,16 @@
                 <tbody>
                     {% for user in users %}
                     <tr>
-                        <td>{{ user['user_id'] }}</td>
-                        <td>{{ user['name'] }}</td>
-                        <td>{{ user['email'] }}</td>
-                        <td>{{ user['user_type'] }}</td>
+                        <td>{{ user.user_id }}</td>
+                        <td>{{ user.name }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.user_type }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+
     </div>
 
     <script>
@@ -266,5 +187,6 @@
             document.getElementById("main-content").classList.toggle("expanded");
         }
     </script>
+
 </body>
 </html>
