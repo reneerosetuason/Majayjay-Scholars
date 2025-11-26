@@ -274,10 +274,14 @@ def register():
         email = request.form.get('email')
         password = request.form.get('password')
         confirm = request.form.get('confirm_password')
+        first_name = request.form.get('first_name')
+        middle_name = request.form.get('middle_name')  # Optional field
+        last_name = request.form.get('last_name')
         email_verified = request.form.get('email_verified')
 
-        if not all([email, password, confirm]):
-            flash("Please fill out all fields.", "error")
+        # Validate required fields (middle_name is optional)
+        if not all([email, password, confirm, first_name, last_name]):
+            flash("Please fill out all required fields.", "error")
             return redirect(url_for('register'))
 
         # Check if email is verified
@@ -285,6 +289,7 @@ def register():
             flash('Please verify your email before registering', 'error')
             return redirect(url_for('register'))
 
+        # Check password match
         if password != confirm:
             flash("Passwords do not match!", "error")
             return redirect(url_for('register'))
@@ -292,10 +297,13 @@ def register():
         cursor = db.cursor()
 
         try:
+            # Hash the password before storing (recommended!)
+            # If you have werkzeug.security: hashed_password = generate_password_hash(password)
+            
             cursor.execute("""
-                INSERT INTO users (name, email, password, user_type)
-                VALUES (%s, %s, %s, %s)
-            """, (email.split('@')[0], email, password, 'student'))
+                INSERT INTO users (email, password, first_name, middle_name, last_name, user_type)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """, (email, password, first_name, middle_name, last_name, 'student'))
             db.commit()
             
             # Clean up verification data after successful registration
@@ -305,6 +313,11 @@ def register():
             return redirect(url_for('login'))
         except mysql.connector.IntegrityError:
             flash("Email already exists!", "error")
+            return redirect(url_for('register'))
+        except Exception as e:
+            db.rollback()
+            flash(f"Registration failed: {str(e)}", "error")
+            return redirect(url_for('register'))
         finally:
             cursor.close()
 
@@ -402,15 +415,15 @@ def student_dashboard():
         cursor = db.cursor(dictionary=True)
         
         # Fetch current student info
-        cursor.execute("SELECT name, email FROM users WHERE user_id = %s", (session['user_id'],))
+        cursor.execute("SELECT first_name FROM users WHERE user_id = %s", (session['user_id'],))
         current_student = cursor.fetchone()
         
         cursor.close()
 
         # Get student name or email as fallback
-        name = current_student['name'] if current_student and current_student['name'] else session['email']
+        first_name = current_student['first_name'] if current_student and current_student.get('first_name') else session.get('email', 'Student')
         
-        return render_template('student/student_dashboard.html', name=name)
+        return render_template('student/student_dashboard.html', first_name=first_name)
 
     flash("Access denied!", "error")
     return redirect(url_for('login'))
@@ -525,17 +538,22 @@ def renew():
         try:
             user_id = session.get('user_id')
 
-            full_name = request.form.get('full_name')
+            first_name = request.form.get('first_name')
+            middle_name = request.form.get('middle_name')
+            last_name = request.form.get('last_name')
             student_id = request.form.get('student_id')
             contact_number = request.form.get('contact_number')
+            scholarship_type = request.form.get('scholarship_type')
             address = request.form.get('address')
+            baranggay = request.form.get('baranggay')
+            municipality = request.form.get('municipality')
             course = request.form.get('course')
             year_level = request.form.get('year_level')
             gwa = request.form.get('gwa')
             reason = request.form.get('reason')
 
             uploaded_files = {}
-            for field in ['school_id', 'id_picture', 'birth_certificate', 'grades']:
+            for field in ['school_id', 'id_picture', 'birth_certificate', 'grades', 'cor']:
                 file = request.files.get(field)
                 if file and allowed_file(file.filename):
                     filename = secure_filename(file.filename)
@@ -547,17 +565,19 @@ def renew():
 
             cursor = db.cursor()
             cursor.execute("""
-                INSERT INTO application (
-                    user_id, full_name, student_id, contact_number, address,
+                INSERT INTO renew (
+                    user_id, first_name, middle_name, last_name, student_id, contact_number, 
+                    scholarship_type, address, baranggay, municipality,
                     course, year_level, gwa, reason,
-                    school_id, id_picture, birth_certificate, grades,
+                    school_id, id_picture, birth_certificate, grades, cor,
                     status, submission_date
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'Pending', NOW())
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'Pending', NOW())
             """, (
-                user_id, full_name, student_id, contact_number, address,
+                user_id, first_name, middle_name, last_name, student_id, contact_number,
+                scholarship_type, address, baranggay, municipality,
                 course, year_level, gwa, reason,
                 uploaded_files['school_id'], uploaded_files['id_picture'],
-                uploaded_files['birth_certificate'], uploaded_files['grades']
+                uploaded_files['birth_certificate'], uploaded_files['grades'], uploaded_files['cor']
             ))
 
             db.commit()

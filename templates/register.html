@@ -346,6 +346,12 @@
                     </p>
                 </div>
 
+                <!-- Name Fields (disabled until email is verified) -->
+                <input type="text" name="first_name" id="firstNameField" placeholder="First Name" required disabled>
+                <input type="text" name="middle_name" id="middleNameField" placeholder="Middle Name (Optional)" disabled>
+                <input type="text" name="last_name" id="lastNameField" placeholder="Last Name" required disabled>
+
+                <!-- Password Fields (disabled until email is verified) -->
                 <input type="password" name="password" placeholder="Password" required disabled id="passwordField">
                 <input type="password" name="confirm_password" placeholder="Confirm Password" required disabled id="confirmPasswordField">
                 
@@ -367,6 +373,9 @@
         const emailInput = document.getElementById('email');
         const verificationSection = document.getElementById('verificationSection');
         const verificationCodeInput = document.getElementById('verificationCode');
+        const firstNameField = document.getElementById('firstNameField');
+        const middleNameField = document.getElementById('middleNameField');
+        const lastNameField = document.getElementById('lastNameField');
         const passwordField = document.getElementById('passwordField');
         const confirmPasswordField = document.getElementById('confirmPasswordField');
         const registerBtn = document.getElementById('registerBtn');
@@ -464,7 +473,10 @@
                     isEmailVerified = true;
                     emailVerifiedInput.value = 'true';
                     
-                    // Enable password fields and register button
+                    // Enable name fields, password fields and register button
+                    firstNameField.disabled = false;
+                    middleNameField.disabled = false;
+                    lastNameField.disabled = false;
                     passwordField.disabled = false;
                     confirmPasswordField.disabled = false;
                     registerBtn.disabled = false;

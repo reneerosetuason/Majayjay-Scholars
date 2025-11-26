@@ -170,9 +170,7 @@
 
         <div class="container">
             <div class="header">
-                <h2>Welcome, {{ name }} 🎓</h2>
-                <p>Student Dashboard</p>
-                <a href="/logout" class="logout-btn-top">Logout</a>
+                <h2>Welcome, {{ first_name }} 🎓</h2>
             </div>
 
             {% with messages = get_flashed_messages(with_categories=true) %}

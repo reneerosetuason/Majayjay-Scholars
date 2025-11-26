@@ -162,6 +162,12 @@
         box-shadow: 0 8px 20px rgba(155, 89, 182, 0.4);
     }
 
+    @media (max-width: 768px) {
+        .form-row {
+            flex-direction: column;
+        }
+    }
+
 </style>
 </head>
 
@@ -182,7 +188,7 @@
         <h2>Renew Scholarship Application</h2>
 
         <!-- FORM -->
-        <form action="/renew_submit" method="POST" enctype="multipart/form-data">
+        <form action="/renew" method="POST" enctype="multipart/form-data">
 
             <!-- FULL NAME -->
             <label>Full Name</label>
@@ -212,14 +218,6 @@
                 </div>
             </div>
 
-            <!-- SCHOLARSHIP TYPE -->
-            <label>Scholarship Type</label>
-            <select name="scholarship_type" required>
-                <option value="">Select Scholarship Type</option>
-                <option value="Academic Scholar">Mayor's Scholar</option>
-                <option value="Athletic Scholar">Sangguniang Kabataan Scholar</option>
-            </select>
-
             <!-- ADDRESS -->
             <label>Address</label>
             <div class="form-row">
@@ -237,7 +235,7 @@
 
                 <div>
                     <label>Barangay</label>
-                    <select name="barangay" required>
+                    <select name="baranggay" required>
                         <option value="">Select Barangay</option>
                         <option>Amonoy</option>
                         <option>Bakia</option>
