@@ -4,107 +4,199 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register | MajayjayScholars</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            background-color: #ede4ff;
-            font-family: 'Poppins', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
+        * {
             margin: 0;
-            padding: 20px;
+            padding: 0;
             box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="%23ffffff" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>') repeat;
+            pointer-events: none;
         }
 
         .wrapper {
             display: flex;
             width: 100%;
-            max-width: 900px;
-            min-height: 600px;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            max-width: 1100px;
+            min-height: 700px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.2);
             overflow: hidden;
+            position: relative;
         }
 
-        /* Left Side: Logo area */
         .image-side {
-            flex: 2;
-            background-color: #ffffff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 30px;
-        }
-
-        .image-side img {
-            width: 80%;
-            max-width: 300px;
-            height: auto;
-            object-fit: contain;
-        }
-
-        /* Right Side: Form area */
-        .form-side {
-            flex: 3;
-            padding: 40px;
+            flex: 1;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            padding: 60px 40px;
+            position: relative;
+        }
+
+        .image-side::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .logo-container {
+            position: relative;
+            z-index: 2;
             text-align: center;
-            box-sizing: border-box;
+        }
+
+        .image-side img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .brand-text {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-side {
+            flex: 1.2;
+            padding: 50px 45px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow-y: auto;
+        }
+
+        .form-header {
+            margin-bottom: 32px;
         }
 
         h2 {
-            color: #7a5af5;
-            margin-bottom: 25px;
+            color: #2d3748;
+            font-size: 2rem;
             font-weight: 700;
-            font-size: 1.75rem;
+            margin-bottom: 8px;
+            letter-spacing: -0.025em;
+        }
+
+        .subtitle {
+            color: #718096;
+            font-size: 1rem;
+            font-weight: 400;
         }
 
         form {
             width: 100%;
-            max-width: 320px;
         }
 
-        .input-group {
+        .form-group {
+            margin-bottom: 20px;
             position: relative;
-            margin: 10px 0;
+        }
+
+        .form-group label {
+            display: block;
+            color: #4a5568;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 8px;
         }
 
         input {
             width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            box-sizing: border-box;
-            transition: border-color 0.3s;
-            font-family: 'Poppins', sans-serif;
-            font-size: 14px;
+            padding: 14px 18px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            background: #f7fafc;
+            font-family: 'Inter', sans-serif;
         }
 
         input:focus {
             outline: none;
-            border-color: #7a5af5;
-            box-shadow: 0 0 0 3px rgba(122, 90, 245, 0.1);
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
         input:disabled {
-            background-color: #f5f5f5;
+            background: #edf2f7;
             cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        input::placeholder {
+            color: #a0aec0;
+        }
+
+        .send-code-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 8px;
+        }
+
+        .send-code-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .send-code-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
         }
 
         .verification-section {
             display: none;
-            margin: 15px 0;
+            margin: 20px 0;
             padding: 20px;
-            background: #f0f8ff;
-            border-radius: 10px;
-            border: 2px solid #7a5af5;
-            box-shadow: 0 2px 10px rgba(122, 90, 245, 0.1);
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+            border-radius: 12px;
+            border: 2px solid #667eea;
         }
 
         .verification-section.active {
@@ -123,134 +215,103 @@
             }
         }
 
+        .verification-section p {
+            margin: 0;
+            font-size: 0.875rem;
+        }
+
         .code-input-group {
             display: flex;
             gap: 10px;
-            margin-top: 10px;
-            align-items: stretch;
+            margin-top: 12px;
         }
 
         .code-input {
             flex: 2;
             text-align: center;
-            font-size: 20px;
+            font-size: 1.25rem;
             font-weight: 600;
-            letter-spacing: 5px;
-            border: 2px solid #7a5af5 !important;
-            padding: 14px 10px !important;
-            min-width: 0;
-        }
-
-        .code-input::placeholder {
-            letter-spacing: 3px;
-            font-size: 18px;
+            letter-spacing: 0.3em;
+            border: 2px solid #667eea !important;
+            background: white !important;
         }
 
         .verify-btn {
             flex: 1;
             padding: 14px 20px;
-            background: #48bb78;
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             cursor: pointer;
             font-weight: 600;
-            transition: 0.3s;
-            white-space: nowrap;
-            font-family: 'Poppins', sans-serif;
-            font-size: 14px;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
         }
 
         .verify-btn:hover {
-            background: #38a169;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(72, 187, 120, 0.3);
         }
 
         .verify-btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-
-        button {
-            width: 100%;
-            background-color: #7a5af5;
-            color: white;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-top: 20px;
-            font-size: 1rem;
-            font-weight: 600;
-            transition: all 0.3s;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        button:hover {
-            background-color: #6745d1;
-            transform: translateY(-1px);
-        }
-
-        button:active {
-            transform: scale(0.99);
-        }
-
-        button:disabled {
-            background-color: #ccc;
+            opacity: 0.6;
             cursor: not-allowed;
             transform: none;
         }
 
-        .send-code-btn {
+        .register-btn {
             width: 100%;
-            background: #7a5af5;
-            margin-top: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 24px;
         }
 
-        a {
-            color: #7a5af5;
-            text-decoration: none;
-            transition: color 0.3s;
+        .register-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
         }
 
-        a:hover {
-            color: #6745d1;
-            text-decoration: underline;
+        .register-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
         }
 
         .alert {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            border-radius: 8px;
-            font-size: 14px;
-            text-align: left;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            border-left: 4px solid;
         }
 
-        .alert-success { 
-            background-color: #d4edda; 
-            color: #155724; 
-            border-left: 4px solid #48bb78;
-        }
-        
-        .alert-error { 
-            background-color: #f8d7da; 
-            color: #721c24; 
-            border-left: 4px solid #f56565;
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-color: #48bb78;
         }
 
-        .alert-info {
-            background-color: #cfe2ff;
-            color: #084298;
-            border-left: 4px solid #7a5af5;
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border-color: #f56565;
         }
 
         .status-badge {
             display: inline-block;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 12px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
             font-weight: 600;
-            margin-left: 10px;
+            margin-left: 8px;
         }
 
         .status-verified {
@@ -258,55 +319,104 @@
             color: #155724;
         }
 
-        .status-pending {
-            background: #fff3cd;
-            color: #856404;
-        }
-
         .resend-link {
-            font-size: 13px;
-            color: #7a5af5;
+            color: #667eea;
             cursor: pointer;
-            margin-top: 10px;
-            display: inline-block;
+            font-weight: 500;
+            transition: color 0.3s ease;
         }
 
         .resend-link:hover {
+            color: #5a67d8;
             text-decoration: underline;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 28px 0;
+            position: relative;
+            color: #a0aec0;
+            font-size: 0.875rem;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e2e8f0;
+        }
+
+        .divider span {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 0 16px;
+            position: relative;
+        }
+
+        .login-link {
+            text-align: center;
+            color: #718096;
+            font-size: 0.95rem;
+        }
+
+        .login-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .login-link a:hover {
+            color: #5a67d8;
         }
 
         @media (max-width: 768px) {
             .wrapper {
                 flex-direction: column;
-                width: 95%;
-                padding: 0;
+                min-height: auto;
+                margin: 10px;
             }
 
             .image-side {
-                display: none;
+                padding: 40px 20px;
+                min-height: 200px;
+            }
+
+            .image-side img {
+                width: 80px;
+                height: 80px;
+            }
+
+            .brand-text {
+                font-size: 1.25rem;
             }
 
             .form-side {
-                flex: 1;
-                padding: 30px 20px;
+                padding: 40px 30px;
             }
 
-            form {
-                max-width: 100%;
+            h2 {
+                font-size: 1.75rem;
             }
         }
     </style>
 </head>
 <body>
     <div class="wrapper">
-        <!-- Left Column: Logo -->
         <div class="image-side">
-            <img src="{{ url_for('static', filename='assets/majayjay_logo.jpg') }}" alt="Majayjay Logo">
+            <div class="logo-container">
+                <img src="{{ url_for('static', filename='assets/majayjay_logo.jpg') }}" alt="Majayjay Logo">
+                <div class="brand-text">MajayjayScholars</div>
+            </div>
         </div>
 
-        <!-- Right Column: Register Form -->
         <div class="form-side">
-            <h2>Create Your Account</h2>
+            <div class="form-header">
+                <h2>Create your account</h2>
+                <p class="subtitle">Join MajayjayScholars today</p>
+            </div>
 
             <div id="messageContainer"></div>
 
@@ -319,50 +429,69 @@
             {% endwith %}
 
             <form method="POST" action="{{ url_for('register') }}" id="registerForm">
-                <div class="input-group">
-                    <input type="email" name="email" id="email" placeholder="Email" required>
-                    <span id="emailStatus"></span>
+                <div class="form-group">
+                    <label for="email">Email address <span id="emailStatus"></span></label>
+                    <input type="email" name="email" id="email" placeholder="Enter your email" required>
                 </div>
 
                 <button type="button" class="send-code-btn" id="sendCodeBtn">
-                    📧 Send Verification Code
+                    Send Verification Code
                 </button>
 
-                <!-- Verification Section -->
                 <div class="verification-section" id="verificationSection">
-                    <p style="font-size: 14px; color: #333; margin-bottom: 12px; font-weight: 600;">
-                        📧 Check your email for the verification code
+                    <p style="color: #4a5568; font-weight: 600; margin-bottom: 8px;">
+                        Check your email for the verification code
                     </p>
-                    <p style="font-size: 13px; color: #666; margin-bottom: 10px;">
+                    <p style="color: #718096; margin-bottom: 12px;">
                         Enter the 6-digit code below:
                     </p>
                     <div class="code-input-group">
                         <input type="text" class="code-input" id="verificationCode" 
                                placeholder="000000" maxlength="6" pattern="[0-9]{6}">
-                        <button type="button" class="verify-btn" id="verifyBtn">✓ Verify</button>
+                        <button type="button" class="verify-btn" id="verifyBtn">Verify</button>
                     </div>
-                    <p style="font-size: 12px; color: #999; margin-top: 8px;">
-                        Didn't receive the code? <a class="resend-link" id="resendLink">Click here to resend</a>
+                    <p style="font-size: 0.8rem; color: #a0aec0; margin-top: 10px;">
+                        Didn't receive it? <span class="resend-link" id="resendLink">Resend code</span>
                     </p>
                 </div>
 
-                <!-- Name Fields (disabled until email is verified) -->
-                <input type="text" name="first_name" id="firstNameField" placeholder="First Name" required disabled>
-                <input type="text" name="middle_name" id="middleNameField" placeholder="Middle Name (Optional)" disabled>
-                <input type="text" name="last_name" id="lastNameField" placeholder="Last Name" required disabled>
+                <div class="form-group">
+                    <label for="firstNameField">First name</label>
+                    <input type="text" name="first_name" id="firstNameField" placeholder="Enter your first name" required disabled>
+                </div>
 
-                <!-- Password Fields (disabled until email is verified) -->
-                <input type="password" name="password" placeholder="Password" required disabled id="passwordField">
-                <input type="password" name="confirm_password" placeholder="Confirm Password" required disabled id="confirmPasswordField">
+                <div class="form-group">
+                    <label for="middleNameField">Middle name (optional)</label>
+                    <input type="text" name="middle_name" id="middleNameField" placeholder="Enter your middle name" disabled>
+                </div>
+
+                <div class="form-group">
+                    <label for="lastNameField">Last name</label>
+                    <input type="text" name="last_name" id="lastNameField" placeholder="Enter your last name" required disabled>
+                </div>
+
+                <div class="form-group">
+                    <label for="passwordField">Password</label>
+                    <input type="password" name="password" id="passwordField" placeholder="Create a password" required disabled>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPasswordField">Confirm password</label>
+                    <input type="password" name="confirm_password" id="confirmPasswordField" placeholder="Confirm your password" required disabled>
+                </div>
                 
                 <input type="hidden" name="email_verified" id="emailVerified" value="false">
                 
-                <button type="submit" id="registerBtn" disabled>Register</button>
+                <button type="submit" class="register-btn" id="registerBtn" disabled>Create Account</button>
             </form>
 
-            <p style="margin-top: 25px; font-size: 0.9rem;">
-                Already have an account? <a href="{{ url_for('login') }}">Login</a>
-            </p>
+            <div class="divider">
+                <span>Already have an account?</span>
+            </div>
+
+            <div class="login-link">
+                <a href="{{ url_for('login') }}">Sign in instead</a>
+            </div>
         </div>
     </div>
 

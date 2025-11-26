@@ -101,6 +101,7 @@
         .badge-approved { background: #d4edda; color: #155724; }
         .badge-pending { background: #fff3cd; color: #856404; }
         .badge-rejected { background: #f8d7da; color: #721c24; }
+        .badge-renewal { background: #d1ecf1; color: #0c5460; }
         .badge-scholar { background: #e7d6f5; color: #6f42c1; }
 
         .card-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
@@ -150,22 +151,22 @@
 
         {% if applications %}
         
-        <!-- STAT CARDS -->
+        <!-- STAT CARDS - FIXED: Using lowercase status values -->
         <div class="stats-grid">
             <div class="stat-card total">
                 <div class="number">{{ applications|length }}</div>
                 <div class="label">Total Applications</div>
             </div>
             <div class="stat-card approved">
-                <div class="number">{{ applications|selectattr('status','equalto','Approved')|list|length }}</div>
+                <div class="number">{{ applications|selectattr('status','equalto','approved')|list|length }}</div>
                 <div class="label">Approved</div>
             </div>
             <div class="stat-card pending">
-                <div class="number">{{ applications|selectattr('status','equalto','Pending')|list|length }}</div>
+                <div class="number">{{ applications|selectattr('status','equalto','pending')|list|length }}</div>
                 <div class="label">Pending</div>
             </div>
             <div class="stat-card rejected">
-                <div class="number">{{ applications|selectattr('status','equalto','Rejected')|list|length }}</div>
+                <div class="number">{{ applications|selectattr('status','equalto','rejected')|list|length }}</div>
                 <div class="label">Rejected</div>
             </div>
         </div>
@@ -177,23 +178,29 @@
                 <!-- HEADER -->
                 <div class="card-header">
                     <div>
-                        <h3>{{ app.full_name }}</h3>
+                        <h3>{{ app.first_name }} {{ app.middle_name }} {{ app.last_name }}</h3>
                         <p class="application-id">Application ID: #{{ app.application_id }}</p>
                         <span class="timeline-badge">📅 Submitted: {{ app.submission_date.strftime('%B %d, %Y') }}</span>
                     </div>
 
                     <div class="badges">
-                        <!-- STATUS BADGE -->
-                        {% if app.status == 'Approved' %}
+                        <!-- STATUS BADGE - FIXED: Using lowercase comparison -->
+                        {% if app.status == 'approved' %}
                             <span class="badge badge-approved">✓ Approved</span>
-                        {% elif app.status == 'Pending' %}
+                        {% elif app.status == 'pending' %}
                             <span class="badge badge-pending">⏳ Pending Review</span>
-                        {% else %}
+                        {% elif app.status == 'rejected' %}
                             <span class="badge badge-rejected">✗ Rejected</span>
+                        {% elif app.status == 'renewal' %}
+                            <span class="badge badge-renewal">🔄 Renewal</span>
+                        {% else %}
+                            <span class="badge badge-pending">{{ app.status }}</span>
                         {% endif %}
 
                         <!-- SCHOLARSHIP TYPE BADGE -->
-                        <span class="badge badge-scholar">{{ app.scholarship_type }}</span>
+                        {% if app.scholarship_type %}
+                        <span class="badge badge-scholar">{{ app.scholarship_type|title }}</span>
+                        {% endif %}
                     </div>
                 </div>
 
@@ -201,31 +208,37 @@
                 <div class="card-details">
                     <div class="detail-item">
                         <strong>Student ID</strong>
-                        <span>{{ app.student_id }}</span>
+                        <span>{{ app.student_id or 'N/A' }}</span>
                     </div>
                     <div class="detail-item">
                         <strong>Course</strong>
-                        <span>{{ app.course }}</span>
+                        <span>{{ app.course or 'N/A' }}</span>
                     </div>
                     <div class="detail-item">
                         <strong>Year Level</strong>
-                        <span>{{ app.year_level }}</span>
+                        <span>{{ app.year_level or 'N/A' }}</span>
                     </div>
                     <div class="detail-item">
                         <strong>GWA</strong>
-                        <span style="color:#7a5af5; font-weight:600;">{{ app.gwa }}</span>
+                        <span style="color:#7a5af5; font-weight:600;">{{ app.gwa or 'N/A' }}</span>
                     </div>
                     <div class="detail-item">
                         <strong>Address</strong>
-                        <span>{{ app.address }}</span>
+                        <span>{{ app.address or 'N/A' }}, {{ app.baranggay or '' }} {{ app.municipality or '' }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Contact</strong>
+                        <span>{{ app.contact_number or 'N/A' }}</span>
                     </div>
                 </div>
 
                 <!-- REASON -->
+                {% if app.reason %}
                 <div class="reason-section">
                     <strong>💭 Your Statement:</strong>
                     <p>{{ app.reason }}</p>
                 </div>
+                {% endif %}
 
                 <!-- DOCUMENTS -->
                 <div class="documents-section">
@@ -242,6 +255,9 @@
                         {% endif %}
                         {% if app.grades %}
                         <a href="/uploads/{{ app.grades }}" class="doc-link" target="_blank">📊 Grades</a>
+                        {% endif %}
+                        {% if app.cor %}
+                        <a href="/uploads/{{ app.cor }}" class="doc-link" target="_blank">📄 COR</a>
                         {% endif %}
                     </div>
                 </div>

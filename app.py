@@ -436,8 +436,21 @@ def apply():
         flash("Access denied!", "error")
         return redirect(url_for('login'))
 
-    # CHECK IF USER ALREADY HAS AN APPLICATION (for both GET and POST)
+    # Get user information from users table
     cursor = db.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT first_name, middle_name, last_name, email 
+        FROM users 
+        WHERE user_id = %s
+    """, (session['user_id'],))
+    user_info = cursor.fetchone()
+    
+    if not user_info:
+        cursor.close()
+        flash("User information not found!", "error")
+        return redirect(url_for('login'))
+
+    # CHECK IF USER ALREADY HAS AN APPLICATION
     cursor.execute("""
         SELECT COUNT(*) as count FROM application 
         WHERE user_id = %s AND (scholarship_type = 'new' OR scholarship_type IS NULL)
@@ -453,9 +466,7 @@ def apply():
     cursor.close()
 
     if request.method == 'POST':
-        first_name = request.form.get('first_name')
-        middle_name = request.form.get('middle_name')
-        last_name = request.form.get('last_name')
+        # Names are now read-only from the form but we'll use the database values
         student_id = request.form.get('student_id')
         contact_number = request.form.get('contact_number')
         address = request.form.get('address')
@@ -465,9 +476,6 @@ def apply():
         year_level = request.form.get('year_level')
         gwa = request.form.get('gwa')
         reason = request.form.get('reason')
-
-        # Create full name
-        full_name = f"{first_name} {middle_name} {last_name}".strip()
 
         uploaded_files = {}
         for field in ['school_id', 'id_picture', 'birth_certificate', 'grades', 'cor']:
@@ -498,23 +506,32 @@ def apply():
                 flash("You have already submitted an application. You can only apply once.", "error")
                 return redirect(url_for('student_dashboard'))
             
+            # Insert application - status defaults to 'pending' (not explicitly set, let DB default handle it)
+            # DO NOT SET STATUS IN INSERT - let the database default value 'pending' take effect
             cursor.execute("""
                 INSERT INTO application (
-                    user_id, full_name, first_name, middle_name, last_name, student_id, 
-                    contact_number, address, municipality, barangay, 
-                    course, year_level, gwa, reason, 
-                    school_id, id_picture, birth_certificate, grades, cor,
-                    scholarship_type, status, submission_date
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'new', 'Pending', CURRENT_TIMESTAMP)
+                    user_id, student_id, contact_number, address, 
+                    municipality, baranggay, course, year_level, 
+                    gwa, reason, school_id, id_picture, 
+                    birth_certificate, grades, cor, scholarship_type
+                ) VALUES (
+                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
+                    %s, %s, %s, %s, %s, 'new'
+                )
             """, (
-                session['user_id'], full_name, first_name, middle_name, last_name, student_id, 
-                contact_number, address, municipality, barangay, 
-                course, year_level, gwa, reason,
-                uploaded_files['school_id'], uploaded_files['id_picture'],
-                uploaded_files['birth_certificate'], uploaded_files['grades'],
-                uploaded_files['cor']
+                session['user_id'], student_id, contact_number, address,
+                municipality, barangay, course, year_level,
+                gwa, reason, uploaded_files['school_id'], 
+                uploaded_files['id_picture'], uploaded_files['birth_certificate'],
+                uploaded_files['grades'], uploaded_files['cor']
             ))
             db.commit()
+            
+            # Debug: Check what status was actually set
+            cursor.execute("SELECT status FROM application WHERE user_id = %s ORDER BY application_id DESC LIMIT 1", (session['user_id'],))
+            result = cursor.fetchone()
+            print(f"DEBUG: Application submitted with status: {result}")
+            
             flash("✅ Application submitted successfully!", "success")
             return redirect(url_for('student_dashboard'))
         except Exception as e:
@@ -524,8 +541,8 @@ def apply():
         finally:
             cursor.close()
 
-    return render_template('student/apply.html')
-
+    # Pass user_info to template for pre-filling the form
+    return render_template('student/apply.html', user_info=user_info)
 
 # ---------- RENEW SCHOLARSHIP ----------
 @app.route('/renew', methods=['GET', 'POST'])
@@ -597,24 +614,50 @@ def renew():
 
 @app.route('/my_applications')
 def my_applications():
-    if session.get('user_type', '').lower() == 'student':
-        cursor = db.cursor(dictionary=True)
-
-        # Fetch all applications of the logged-in student
-        cursor.execute("""
-            SELECT application_id, scholarship_type, submission_date, status
-            FROM application
-            WHERE user_id = %s
-            ORDER BY submission_date DESC
-        """, (session['user_id'],))
-
-        applications = cursor.fetchall()
-        cursor.close()
-
-        return render_template('student/my_applications.html', applications=applications)
+    if session.get('user_type', '').lower() != 'student':
+        flash("Access denied!", "error")
+        return redirect(url_for('login'))
     
-    flash("Access denied!", "error")
-    return redirect(url_for('login'))
+    cursor = db.cursor(dictionary=True)
+
+    # Fetch all applications with user details via JOIN
+    # This gets ALL columns from application table AND name fields from users table
+    cursor.execute("""
+        SELECT 
+            a.application_id,
+            a.user_id,
+            a.student_id,
+            a.contact_number,
+            a.address,
+            a.municipality,
+            a.baranggay,
+            a.course,
+            a.year_level,
+            a.gwa,
+            a.reason,
+            a.scholarship_type,
+            a.school_id,
+            a.id_picture,
+            a.birth_certificate,
+            a.grades,
+            a.cor,
+            a.status,
+            a.submission_date,
+            a.updated_at,
+            u.first_name,
+            u.middle_name,
+            u.last_name,
+            u.email
+        FROM application a
+        INNER JOIN users u ON a.user_id = u.user_id
+        WHERE a.user_id = %s
+        ORDER BY a.submission_date DESC
+    """, (session['user_id'],))
+
+    applications = cursor.fetchall()
+    cursor.close()
+
+    return render_template('student/my_applications.html', applications=applications)
 
 #================mayor_records==================
 @app.route('/mayor/records')
@@ -626,20 +669,43 @@ def mayor_records():
 
     cursor = db.cursor(dictionary=True)
 
+    # JOIN application with users table to get name fields
+    # Names are stored in users table, not application table
     cursor.execute("""
-        SELECT application_id, user_id, first_name, middle_name, last_name, student_id, address, municipality, baranggay,
-               course, year_level, gwa, reason, school_id, id_picture,
-               birth_certificate, grades, status, submission_date,
-               scholarship_type
-        FROM application
-        ORDER BY submission_date DESC
+        SELECT 
+            a.application_id,
+            a.user_id,
+            a.student_id,
+            a.contact_number,
+            a.address,
+            a.municipality,
+            a.baranggay,
+            a.course,
+            a.year_level,
+            a.gwa,
+            a.reason,
+            a.scholarship_type,
+            a.school_id,
+            a.id_picture,
+            a.birth_certificate,
+            a.grades,
+            a.cor,
+            a.status,
+            a.submission_date,
+            a.updated_at,
+            u.first_name,
+            u.middle_name,
+            u.last_name,
+            u.email
+        FROM application a
+        INNER JOIN users u ON a.user_id = u.user_id
+        ORDER BY a.submission_date DESC
     """)
  
     applications = cursor.fetchall()
     cursor.close()
 
     return render_template('mayor/mayor_records.html', applications=applications)
-
 #==============mayor scholars++++++++++++
 @app.route('/mayor/scholars')
 def mayor_scholars():
@@ -790,5 +856,3 @@ def logout():
 # ================== MAIN ==================
 if __name__ == '__main__':
     app.run(debug=True)
-
-#assjkdakgs
