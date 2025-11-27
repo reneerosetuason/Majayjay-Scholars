@@ -93,6 +93,41 @@
             margin-bottom: 20px;
             font-size: 24px;
         }
+        .search-container {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .search-input {
+            flex: 1;
+            padding: 12px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: #7a5af5;
+            box-shadow: 0 0 0 3px rgba(122, 90, 245, 0.1);
+        }
+        .search-input::placeholder {
+            color: #a0aec0;
+        }
+        .clear-search {
+            padding: 12px 20px;
+            background: #e2e8f0;
+            color: #4a5568;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        .clear-search:hover {
+            background: #cbd5e0;
+        }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -222,6 +257,10 @@
         <!-- Users List -->
         <div class="users-section" id="users">
             <h3>Registered Users</h3>
+            <div class="search-container">
+                <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search by User ID, Name, Email, or Role..." onkeyup="searchTable()">
+                <button class="clear-search" onclick="clearSearch()">Clear</button>
+            </div>
             <table id="usersTable">
                 <thead>
                     <tr>
@@ -306,6 +345,43 @@
             displayPage(currentPage);
         }
 
+        // Search functionality
+        function searchTable() {
+            const input = document.getElementById('searchInput');
+            const filter = input.value.toLowerCase();
+            const rows = tableBody.getElementsByTagName('tr');
+            
+            Array.from(rows).forEach(row => {
+                const cells = row.getElementsByTagName('td');
+                let found = false;
+                
+                for (let i = 0; i < cells.length; i++) {
+                    const cellText = cells[i].textContent.toLowerCase();
+                    if (cellText.includes(filter)) {
+                        found = true;
+                        break;
+                    }
+                }
+                
+                row.style.display = found ? '' : 'none';
+            });
+            
+            // Reset to first page after search
+            currentPage = 1;
+            updatePaginationAfterSearch();
+        }
+        
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            searchTable();
+        }
+        
+        function updatePaginationAfterSearch() {
+            allRows = Array.from(tableBody.getElementsByTagName('tr')).filter(row => row.style.display !== 'none');
+            totalPages = Math.ceil(allRows.length / rowsPerPage);
+            displayPage(currentPage);
+        }
+
         // Pagination
         let currentPage = 1;
         const rowsPerPage = 10;
@@ -314,18 +390,22 @@
         let totalPages = Math.ceil(allRows.length / rowsPerPage);
 
         function displayPage(page) {
-            allRows = Array.from(tableBody.getElementsByTagName('tr'));
+            allRows = Array.from(tableBody.getElementsByTagName('tr')).filter(row => row.style.display !== 'none');
             totalPages = Math.ceil(allRows.length / rowsPerPage);
             
             const start = (page - 1) * rowsPerPage;
             const end = start + rowsPerPage;
             
-            allRows.forEach((row, index) => {
+            const allTableRows = Array.from(tableBody.getElementsByTagName('tr'));
+            allTableRows.forEach(row => {
+                if (row.style.display === 'none') return; // Skip hidden by search
+                const index = allRows.indexOf(row);
                 row.style.display = (index >= start && index < end) ? '' : 'none';
             });
             
             document.getElementById('startEntry').textContent = allRows.length > 0 ? start + 1 : 0;
             document.getElementById('endEntry').textContent = Math.min(end, allRows.length);
+            document.getElementById('totalEntries').textContent = allRows.length;
             
             document.getElementById('prevBtn').disabled = page === 1;
             document.getElementById('nextBtn').disabled = page === totalPages;

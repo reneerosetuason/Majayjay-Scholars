@@ -113,10 +113,6 @@
             📁 Scholar Records
         </a>
 
-        <a href="/mayor/pending" class="{{ 'active' if request.path == '/mayor/pending' else '' }}">
-            ⏳ Pending Scholars
-        </a>
-
     {% elif session.get('user_type') == 'admin' %}
         <a href="/admin" class="{{ 'active' if request.path == '/admin' else '' }}">🏛 Admin Dashboard</a>
 

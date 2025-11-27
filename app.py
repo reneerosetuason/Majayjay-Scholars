@@ -359,28 +359,34 @@ def login():
 # ---------- MAYOR DASHBOARD ----------
 @app.route('/mayor')
 def mayor_dashboard():
-    # Check if logged in and correct role
-    if session.get('user_type', '').lower() == 'mayor':
-        
-        cursor = db.cursor(dictionary=True)
-
-        # Get all users
-        cursor.execute("SELECT user_id, name, email, user_type FROM users")
-        users = cursor.fetchall()
-
-        # Get current mayor's name
-        cursor.execute("SELECT name FROM users WHERE user_id = %s", (session['user_id'],))
-        current_mayor = cursor.fetchone()
-        cursor.close()
-
-        # If name is not found, fallback to email
-        name = current_mayor['name'] if current_mayor and current_mayor['name'] else session.get('email')
-
-        return render_template('mayor/mayor_dashboard.html', users=users, name=name)
-
-    # Access denied
-    flash("Access denied!", "error")
-    return redirect(url_for('login'))
+    if session.get('user_type', '').lower() != 'mayor':
+        flash("Access denied!", "error")
+        return redirect(url_for('login'))
+    
+    cursor = db.cursor(dictionary=True)
+    
+    # Get mayor's name
+    cursor.execute("SELECT first_name, last_name FROM users WHERE user_id = %s", (session['user_id'],))
+    mayor = cursor.fetchone()
+    name = f"{mayor['first_name']} {mayor['last_name']}" if mayor else session.get('email')
+    
+    # Get all active applications (exclude archived)
+    cursor.execute("""
+        SELECT scholarship_type, status 
+        FROM application 
+        WHERE archived = FALSE OR archived IS NULL
+    """)
+    applications = cursor.fetchall()
+    cursor.close()
+    
+    # Separate by type
+    new_apps = [a for a in applications if a['scholarship_type'] == 'new']
+    renewals = [a for a in applications if a['scholarship_type'] == 'renewal']
+    
+    return render_template('mayor/mayor_dashboard.html', 
+                         name=name, 
+                         new_applications=new_apps, 
+                         renewals=renewals)
 
 #===================admin dashboard===================
 @app.route('/admin')
@@ -466,23 +472,25 @@ def apply():
     cursor.close()
 
     if request.method == 'POST':
-        # Names are now read-only from the form but we'll use the database values
+        # Get form data
         student_id = request.form.get('student_id')
         contact_number = request.form.get('contact_number')
         address = request.form.get('address')
         municipality = request.form.get('municipality')
         barangay = request.form.get('barangay')
+        school_name = request.form.get('school_name')
         course = request.form.get('course')
         year_level = request.form.get('year_level')
         gwa = request.form.get('gwa')
+        year_applied = request.form.get('year_applied')
         reason = request.form.get('reason')
 
+        # Handle file uploads
         uploaded_files = {}
         for field in ['school_id', 'id_picture', 'birth_certificate', 'grades', 'cor']:
             file = request.files.get(field)
             if file and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
-                # Add timestamp to filename to make it unique
                 timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
                 name, ext = os.path.splitext(filename)
                 filename = f"{name}_{timestamp}{ext}"
@@ -494,10 +502,10 @@ def apply():
 
         cursor = db.cursor()
         try:
-            # DOUBLE CHECK before inserting (in case of race condition)
+            # Check if user already has an application
             cursor.execute("""
                 SELECT COUNT(*) as count FROM application 
-                WHERE user_id = %s AND (scholarship_type = 'new' OR scholarship_type IS NULL)
+                WHERE user_id = %s
             """, (session['user_id'],))
             check_result = cursor.fetchone()
             
@@ -506,38 +514,34 @@ def apply():
                 flash("You have already submitted an application. You can only apply once.", "error")
                 return redirect(url_for('student_dashboard'))
             
-            # Insert application - status defaults to 'pending' (not explicitly set, let DB default handle it)
-            # DO NOT SET STATUS IN INSERT - let the database default value 'pending' take effect
+            # Insert application with all fields
             cursor.execute("""
                 INSERT INTO application (
                     user_id, student_id, contact_number, address, 
-                    municipality, baranggay, course, year_level, 
-                    gwa, reason, school_id, id_picture, 
+                    municipality, baranggay, school_name, course, year_level, 
+                    gwa, year_applied, reason, school_id, id_picture, 
                     birth_certificate, grades, cor, scholarship_type
                 ) VALUES (
                     %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
-                    %s, %s, %s, %s, %s, 'new'
+                    %s, %s, %s, %s, %s, %s, %s, 'new'
                 )
             """, (
                 session['user_id'], student_id, contact_number, address,
-                municipality, barangay, course, year_level,
-                gwa, reason, uploaded_files['school_id'], 
+                municipality, barangay, school_name, course, year_level,
+                gwa, year_applied, reason, uploaded_files['school_id'], 
                 uploaded_files['id_picture'], uploaded_files['birth_certificate'],
                 uploaded_files['grades'], uploaded_files['cor']
             ))
             db.commit()
             
-            # Debug: Check what status was actually set
-            cursor.execute("SELECT status FROM application WHERE user_id = %s ORDER BY application_id DESC LIMIT 1", (session['user_id'],))
-            result = cursor.fetchone()
-            print(f"DEBUG: Application submitted with status: {result}")
-            
             flash("✅ Application submitted successfully!", "success")
             return redirect(url_for('student_dashboard'))
         except Exception as e:
             print("Error inserting application:", e)
+            import traceback
+            traceback.print_exc()
             db.rollback()
-            flash("❌ An error occurred while submitting your application.", "error")
+            flash("❌ An error occurred while submitting your application. Please try again.", "error")
         finally:
             cursor.close()
 
@@ -551,6 +555,30 @@ def renew():
         flash("Access denied!", "error")
         return redirect(url_for('login'))
 
+    # Check if user already submitted a renewal
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT COUNT(*) as count FROM renew WHERE user_id = %s
+    """, (session['user_id'],))
+    renewal_check = cursor.fetchone()
+    
+    if renewal_check and renewal_check['count'] > 0:
+        cursor.close()
+        flash("You have already submitted a renewal application.", "error")
+        return redirect(url_for('student_dashboard'))
+    
+    # Fetch existing application data for autofill
+    cursor.execute("""
+        SELECT a.first_name, a.middle_name, a.last_name, a.address, 
+               a.municipality, a.baranggay, a.application_id
+        FROM application a
+        WHERE a.user_id = %s
+        ORDER BY a.submission_date DESC
+        LIMIT 1
+    """, (session['user_id'],))
+    app_data = cursor.fetchone()
+    cursor.close()
+
     if request.method == 'POST':
         try:
             user_id = session.get('user_id')
@@ -560,7 +588,6 @@ def renew():
             last_name = request.form.get('last_name')
             student_id = request.form.get('student_id')
             contact_number = request.form.get('contact_number')
-            scholarship_type = request.form.get('scholarship_type')
             address = request.form.get('address')
             baranggay = request.form.get('baranggay')
             municipality = request.form.get('municipality')
@@ -568,6 +595,9 @@ def renew():
             year_level = request.form.get('year_level')
             gwa = request.form.get('gwa')
             reason = request.form.get('reason')
+            first_name = request.form.get('first_name')
+            middle_name = request.form.get('middle_name')
+            last_name = request.form.get('last_name')
 
             uploaded_files = {}
             for field in ['school_id', 'id_picture', 'birth_certificate', 'grades', 'cor']:
@@ -583,18 +613,20 @@ def renew():
             cursor = db.cursor()
             cursor.execute("""
                 INSERT INTO renew (
-                    user_id, first_name, middle_name, last_name, student_id, contact_number, 
-                    scholarship_type, address, baranggay, municipality,
+                    renewal_id, application_id, user_id, student_id, contact_number, 
+                    address, baranggay, municipality,
                     course, year_level, gwa, reason,
                     school_id, id_picture, birth_certificate, grades, cor,
+                    first_name, middle_name, last_name,
                     status, submission_date
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'Pending', NOW())
+                ) VALUES (NULL, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'Pending', NOW())
             """, (
-                user_id, first_name, middle_name, last_name, student_id, contact_number,
-                scholarship_type, address, baranggay, municipality,
+                request.form.get('application_id'), user_id, student_id, contact_number,
+                address, baranggay, municipality,
                 course, year_level, gwa, reason,
                 uploaded_files['school_id'], uploaded_files['id_picture'],
-                uploaded_files['birth_certificate'], uploaded_files['grades'], uploaded_files['cor']
+                uploaded_files['birth_certificate'], uploaded_files['grades'], uploaded_files['cor'],
+                first_name, middle_name, last_name
             ))
 
             db.commit()
@@ -604,10 +636,16 @@ def renew():
 
         except Exception as e:
             print("Error submitting renewal application:", e)
+            import traceback
+            traceback.print_exc()
             flash("❌ Error submitting renewal application. Please try again.", "error")
             return redirect(url_for('renew'))
 
-    return render_template('student/renew.html')
+    if not app_data:
+        flash("No previous application found. Please apply first.", "error")
+        return redirect(url_for('student_dashboard'))
+    
+    return render_template('student/renew.html', app_data=app_data)
 
 
 #==============application===============
@@ -667,11 +705,16 @@ def mayor_records():
         flash("Access denied!", "error")
         return redirect(url_for('login'))
 
+    show_archived = request.args.get('archived', 'false').lower() == 'true'
     cursor = db.cursor(dictionary=True)
 
     # JOIN application with users table to get name fields
-    # Names are stored in users table, not application table
-    cursor.execute("""
+    if show_archived:
+        where_clause = "WHERE a.archived = TRUE"
+    else:
+        where_clause = "WHERE a.archived = FALSE OR a.archived IS NULL"
+
+    cursor.execute(f"""
         SELECT 
             a.application_id,
             a.user_id,
@@ -680,9 +723,11 @@ def mayor_records():
             a.address,
             a.municipality,
             a.baranggay,
+            a.school_name,
             a.course,
             a.year_level,
             a.gwa,
+            a.year_applied,
             a.reason,
             a.scholarship_type,
             a.school_id,
@@ -691,6 +736,7 @@ def mayor_records():
             a.grades,
             a.cor,
             a.status,
+            a.archived,
             a.submission_date,
             a.updated_at,
             u.first_name,
@@ -699,13 +745,89 @@ def mayor_records():
             u.email
         FROM application a
         INNER JOIN users u ON a.user_id = u.user_id
+        {where_clause}
         ORDER BY a.submission_date DESC
     """)
  
     applications = cursor.fetchall()
     cursor.close()
 
-    return render_template('mayor/mayor_records.html', applications=applications)
+    return render_template('mayor/mayor_records.html', applications=applications, show_archived=show_archived)
+
+#================archive application==================
+@app.route('/mayor/archive/<int:application_id>', methods=['POST'])
+def archive_application(application_id):
+    if session.get('user_type', '').lower() != 'mayor':
+        flash("Access denied!", "error")
+        return redirect(url_for('login'))
+    
+    cursor = db.cursor()
+    try:
+        cursor.execute("""
+            UPDATE application 
+            SET archived = TRUE 
+            WHERE application_id = %s
+        """, (application_id,))
+        db.commit()
+        flash("Application archived successfully!", "success")
+    except Exception as e:
+        print(f"Error archiving application: {e}")
+        db.rollback()
+        flash("Error archiving application.", "error")
+    finally:
+        cursor.close()
+    
+    return redirect(url_for('mayor_records'))
+
+#================approve application==================
+@app.route('/mayor/approve/<int:application_id>', methods=['POST'])
+def approve_application(application_id):
+    if session.get('user_type', '').lower() != 'mayor':
+        flash("Access denied!", "error")
+        return redirect(url_for('login'))
+    
+    cursor = db.cursor()
+    try:
+        cursor.execute("""
+            UPDATE application 
+            SET status = 'approved' 
+            WHERE application_id = %s
+        """, (application_id,))
+        db.commit()
+        flash("Application approved successfully!", "success")
+    except Exception as e:
+        print(f"Error approving application: {e}")
+        db.rollback()
+        flash("Error approving application.", "error")
+    finally:
+        cursor.close()
+    
+    return redirect(url_for('mayor_records'))
+
+#================reject application==================
+@app.route('/mayor/reject/<int:application_id>', methods=['POST'])
+def reject_application(application_id):
+    if session.get('user_type', '').lower() != 'mayor':
+        flash("Access denied!", "error")
+        return redirect(url_for('login'))
+    
+    cursor = db.cursor()
+    try:
+        cursor.execute("""
+            UPDATE application 
+            SET status = 'rejected' 
+            WHERE application_id = %s
+        """, (application_id,))
+        db.commit()
+        flash("Application rejected.", "info")
+    except Exception as e:
+        print(f"Error rejecting application: {e}")
+        db.rollback()
+        flash("Error rejecting application.", "error")
+    finally:
+        cursor.close()
+    
+    return redirect(url_for('mayor_records'))
 #==============mayor scholars++++++++++++
 @app.route('/mayor/scholars')
 def mayor_scholars():
@@ -715,40 +837,40 @@ def mayor_scholars():
 
     cursor = db.cursor(dictionary=True)
     cursor.execute("""
-        SELECT application_id, user_id, first_name, middle_name, last_name, student_id, address, municipality, baranggay,
-               course, year_level, gwa, reason, school_id, id_picture,
-               birth_certificate, grades, status, submission_date,
-               scholarship_type
-        FROM application
-        WHERE status = 'Approved'
-        ORDER BY submission_date DESC
+        SELECT 
+            a.application_id,
+            a.user_id,
+            a.student_id,
+            a.address,
+            a.municipality,
+            a.baranggay,
+            a.school_name,
+            a.course,
+            a.year_level,
+            a.gwa,
+            a.year_applied,
+            a.reason,
+            a.school_id,
+            a.id_picture,
+            a.birth_certificate,
+            a.grades,
+            a.status,
+            a.submission_date,
+            a.scholarship_type,
+            u.first_name,
+            u.middle_name,
+            u.last_name,
+            u.email
+        FROM application a
+        INNER JOIN users u ON a.user_id = u.user_id
+        WHERE a.status = 'approved' AND (a.archived = FALSE OR a.archived IS NULL)
+        ORDER BY a.submission_date DESC
     """)
     scholars = cursor.fetchall()
     cursor.close()
 
     return render_template('mayor/mayor_scholars.html', scholars=scholars)
 
-#-----------------pending scholars----------------
-@app.route('/mayor/pending')
-def mayor_pending():
-    if session.get('user_type') != 'mayor':
-        flash("Access denied!", "error")
-        return redirect(url_for('login'))
-
-    cursor = db.cursor(dictionary=True)
-    cursor.execute("""
-        SELECT application_id, user_id, first_name, middle_name, last_name, student_id, address, municipality, baranggay,
-               course, year_level, gwa, reason, school_id, id_picture,
-               birth_certificate, grades, status, submission_date,
-               scholarship_type
-        FROM application
-        WHERE status = 'Pending'
-        ORDER BY submission_date DESC
-    """)
-    pending_scholars = cursor.fetchall()
-    cursor.close()
-
-    return render_template("mayor/mayor_pending.html", pending_scholars=pending_scholars)
 
 #=============add admin===============
 @app.route("/admin/add_admin", methods=["GET", "POST"])

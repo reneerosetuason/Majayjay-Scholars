@@ -189,97 +189,49 @@
 
         <!-- FORM -->
         <form action="/renew" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="application_id" value="{{ app_data.application_id if app_data else '' }}">
 
-            <!-- FULL NAME -->
-            <label>Full Name</label>
+            <!-- FULL NAME (AUTOFILLED - READONLY) -->
+            <label>Full Name (Auto-filled from previous application)</label>
             <div class="form-row">
                 <div>
                     <label>First Name</label>
-                    <input type="text" name="first_name" required>
+                    <input type="text" name="first_name" value="{{ app_data.first_name if app_data else '' }}" readonly style="background-color: #f5f5f5;">
                 </div>
                 <div>
                     <label>Middle Name</label>
-                    <input type="text" name="middle_name">
+                    <input type="text" name="middle_name" value="{{ app_data.middle_name if app_data else '' }}" readonly style="background-color: #f5f5f5;">
                 </div>
                 <div>
                     <label>Last Name</label>
-                    <input type="text" name="last_name" required>
+                    <input type="text" name="last_name" value="{{ app_data.last_name if app_data else '' }}" readonly style="background-color: #f5f5f5;">
                 </div>
             </div>
 
-            <div class="form-row">
-                <div>
-                    <label>Student ID</label>
-                    <input type="text" name="student_id" required>
-                </div>
-                <div>
-                    <label>Contact Number</label>
-                    <input type="text" name="contact_number" required>
-                </div>
-            </div>
 
-            <!-- ADDRESS -->
-            <label>Address</label>
+
+            <!-- ADDRESS (AUTOFILLED - READONLY) -->
+            <label>Address (Auto-filled from previous application)</label>
             <div class="form-row">
                 <div>
                     <label>House No. / Street</label>
-                    <input type="text" name="address" required>
+                    <input type="text" name="address" value="{{ app_data.address if app_data else '' }}" readonly style="background-color: #f5f5f5;">
                 </div>
 
                 <div>
                     <label>Municipality</label>
-                    <select name="municipality" required>
-                        <option value="Majayjay">Majayjay</option>
-                    </select>
+                    <input type="text" name="municipality" value="{{ app_data.municipality if app_data else 'Majayjay' }}" readonly style="background-color: #f5f5f5;">
                 </div>
 
                 <div>
                     <label>Barangay</label>
-                    <select name="baranggay" required>
-                        <option value="">Select Barangay</option>
-                        <option>Amonoy</option>
-                        <option>Bakia</option>
-                        <option>Balanac</option>
-                        <option>Balayong</option>
-                        <option>Banilad</option>
-                        <option>Banti</option>
-                        <option>Bitaoy</option>
-                        <option>Botocan</option>
-                        <option>Bukal</option>
-                        <option>Burgos</option>
-                        <option>Burol</option>
-                        <option>Coralao</option>
-                        <option>Gagalot</option>
-                        <option>Ibabang Banga</option>
-                        <option>Ibabang Bayucain</option>
-                        <option>Ilayang Banga</option>
-                        <option>Ilayang Bayucain</option>
-                        <option>Isabang</option>
-                        <option>Malinao</option>
-                        <option>May-it</option>
-                        <option>Munting Kawayan</option>
-                        <option>Olla</option>
-                        <option>Oobi</option>
-                        <option>Origuel (Poblacion)</option>
-                        <option>Panalaban</option>
-                        <option>Pangil</option>
-                        <option>Panglan</option>
-                        <option>Piit</option>
-                        <option>Pook</option>
-                        <option>Rizal</option>
-                        <option>San Francisco (Poblacion)</option>
-                        <option>San Isidro</option>
-                        <option>San Miguel (Poblacion)</option>
-                        <option>San Roque</option>
-                        <option>Santa Catalina</option>
-                        <option>Suba</option>
-                        <option>Talortor</option>
-                        <option>Tanawan</option>
-                        <option>Taytay</option>
-                        <option>Villa Nogales</option>
-                    </select>
+                    <input type="text" name="baranggay" value="{{ app_data.baranggay if app_data else '' }}" readonly style="background-color: #f5f5f5;">
                 </div>
             </div>
+
+            <!-- NEW FIELDS TO SUBMIT -->
+            <hr style="margin: 30px 0; border: 1px solid #e0e0e0;">
+            <h3 style="color: #9b59b6; margin-bottom: 20px;">📝 New Information Required</h3>
 
             <!-- COURSE + YEAR -->
             <div class="form-row">
@@ -313,31 +265,31 @@
             <label>Upload New Requirements</label>
 
             <label>School ID</label>
-            <input type="file" name="school_id" accept="image/*" onchange="preview(this, 'idPreview')">
+            <input type="file" name="school_id" accept="image/*" onchange="preview(this, 'idPreview')" required>
             <div class="file-preview">
                 <img id="idPreview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Crect fill='%23f0f0f0' width='160' height='160'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23999' font-family='Arial' font-size='14'%3ENo Image%3C/text%3E%3C/svg%3E">
             </div>
 
             <label>2x2 ID Picture</label>
-            <input type="file" name="id_picture" accept="image/*" onchange="preview(this, 'picPreview')">
+            <input type="file" name="id_picture" accept="image/*" onchange="preview(this, 'picPreview')" required>
             <div class="file-preview">
                 <img id="picPreview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Crect fill='%23f0f0f0' width='160' height='160'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23999' font-family='Arial' font-size='14'%3ENo Image%3C/text%3E%3C/svg%3E">
             </div>
 
             <label>Birth Certificate</label>
-            <input type="file" name="birth_certificate" accept="image/*" onchange="preview(this, 'birthPreview')">
+            <input type="file" name="birth_certificate" accept="image/*" onchange="preview(this, 'birthPreview')" required>
             <div class="file-preview">
                 <img id="birthPreview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Crect fill='%23f0f0f0' width='160' height='160'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23999' font-family='Arial' font-size='14'%3ENo Image%3C/text%3E%3C/svg%3E">
             </div>
 
             <label>Copy of Grades</label>
-            <input type="file" name="grades" accept="image/*" onchange="preview(this, 'gradesPreview')">
+            <input type="file" name="grades" accept="image/*" onchange="preview(this, 'gradesPreview')" required>
             <div class="file-preview">
                 <img id="gradesPreview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Crect fill='%23f0f0f0' width='160' height='160'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23999' font-family='Arial' font-size='14'%3ENo Image%3C/text%3E%3C/svg%3E">
             </div>
 
             <label>COR (Certificate of Registration)</label>
-            <input type="file" name="cor" accept="image/*" onchange="preview(this, 'corPreview')">
+            <input type="file" name="cor" accept="image/*" onchange="preview(this, 'corPreview')" required>
             <div class="file-preview">
                 <img id="corPreview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Crect fill='%23f0f0f0' width='160' height='160'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23999' font-family='Arial' font-size='14'%3ENo Image%3C/text%3E%3C/svg%3E">
             </div>
@@ -345,6 +297,7 @@
             <button type="submit" class="submit-btn">Submit Renewal</button>
 
         </form>
+
     </div>
 </div>
 

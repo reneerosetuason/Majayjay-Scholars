@@ -109,19 +109,19 @@
         /* Stats Grid */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 25px;
+            margin-bottom: 40px;
         }
 
         .stat-card {
             background: white;
-            padding: 25px;
+            padding: 20px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
             text-align: center;
             transition: 0.3s;
-            cursor: pointer;
+            border: 2px solid transparent;
         }
 
         .stat-card:hover {
@@ -130,46 +130,90 @@
         }
 
         .stat-card .icon {
-            font-size: 36px;
+            font-size: 32px;
             margin-bottom: 10px;
         }
 
         .stat-card .number {
-            font-size: 36px;
+            font-size: 32px;
             font-weight: 700;
             margin-bottom: 5px;
+            line-height: 1;
         }
 
         .stat-card .label {
             color: #666;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        /* Total Stats - Larger */
-        .total-stat {
-            grid-column: span 2;
-            background: linear-gradient(135deg, #7a5af5 0%, #6745d1 100%);
-            color: white;
-        }
-
-        .total-stat .label {
-            color: rgba(255,255,255,0.9);
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         /* Color coding */
+        .stat-card.total { border-color: #7a5af5; }
         .stat-card.total .number { color: #7a5af5; }
+        .stat-card.total:hover { border-color: #7a5af5; background: #f8f6ff; }
+        
+        .stat-card.approved { border-color: #48bb78; }
         .stat-card.approved .number { color: #48bb78; }
+        .stat-card.approved:hover { border-color: #48bb78; background: #f0fdf4; }
+        
+        .stat-card.pending { border-color: #ffa500; }
         .stat-card.pending .number { color: #ffa500; }
+        .stat-card.pending:hover { border-color: #ffa500; background: #fffbeb; }
+        
+        .stat-card.rejected { border-color: #f56565; }
         .stat-card.rejected .number { color: #f56565; }
+        .stat-card.rejected:hover { border-color: #f56565; background: #fef2f2; }
 
-        /* Divider */
-        .divider {
-            height: 2px;
-            background: linear-gradient(90deg, transparent, #e0e0e0, transparent);
-            margin: 40px 0 20px;
+        /* Summary Card */
+        .summary-card {
+            background: linear-gradient(135deg, #7a5af5 0%, #6745d1 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 40px;
+            box-shadow: 0 8px 30px rgba(122, 90, 245, 0.3);
+        }
+        .summary-card h3 {
+            color: white;
+            font-size: 20px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+        .summary-item {
+            text-align: center;
+            padding: 15px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        .summary-item .number {
+            font-size: 32px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 5px;
+        }
+        .summary-item .label {
+            color: rgba(255,255,255,0.95);
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
         }
 
+        @media (max-width: 1200px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
         @media (max-width: 768px) {
             .navbar {
                 left: 0;
@@ -180,8 +224,11 @@
                 padding: 0 20px 40px;
                 margin-top: 90px;
             }
-            .total-stat {
-                grid-column: span 1;
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .summary-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -214,37 +261,30 @@
         </div>
 
         <div class="stats-grid">
-            <!-- Total New Applications -->
-            <div class="stat-card total-stat">
+            <div class="stat-card total">
                 <div class="icon">📊</div>
                 <div class="number">{{ new_applications|length }}</div>
-                <div class="label">Total New Applications</div>
+                <div class="label">Total New</div>
             </div>
 
-            <!-- Approved New Applications -->
             <div class="stat-card approved">
                 <div class="icon">✅</div>
-                <div class="number">{{ new_applications|selectattr('status','equalto','Approved')|list|length }}</div>
+                <div class="number">{{ new_applications|selectattr('status','equalto','approved')|list|length }}</div>
                 <div class="label">Approved</div>
             </div>
 
-            <!-- Pending New Applications -->
             <div class="stat-card pending">
                 <div class="icon">⏳</div>
-                <div class="number">{{ new_applications|selectattr('status','equalto','Pending')|list|length }}</div>
+                <div class="number">{{ new_applications|selectattr('status','equalto','pending')|list|length }}</div>
                 <div class="label">Pending</div>
             </div>
 
-            <!-- Rejected New Applications -->
             <div class="stat-card rejected">
                 <div class="icon">❌</div>
-                <div class="number">{{ new_applications|selectattr('status','equalto','Rejected')|list|length }}</div>
+                <div class="number">{{ new_applications|selectattr('status','equalto','rejected')|list|length }}</div>
                 <div class="label">Rejected</div>
             </div>
         </div>
-
-        <!-- Divider -->
-        <div class="divider"></div>
 
         <!-- RENEWAL APPLICATIONS SECTION -->
         <div class="section-title">
@@ -252,70 +292,54 @@
         </div>
 
         <div class="stats-grid">
-            <!-- Total Renewals -->
-            <div class="stat-card total-stat">
+            <div class="stat-card total">
                 <div class="icon">📋</div>
                 <div class="number">{{ renewals|length }}</div>
                 <div class="label">Total Renewals</div>
             </div>
 
-            <!-- Approved Renewals -->
             <div class="stat-card approved">
                 <div class="icon">✅</div>
-                <div class="number">{{ renewals|selectattr('status','equalto','Approved')|list|length }}</div>
+                <div class="number">{{ renewals|selectattr('status','equalto','approved')|list|length }}</div>
                 <div class="label">Approved</div>
             </div>
 
-            <!-- Pending Renewals -->
             <div class="stat-card pending">
                 <div class="icon">⏳</div>
-                <div class="number">{{ renewals|selectattr('status','equalto','Pending')|list|length }}</div>
+                <div class="number">{{ renewals|selectattr('status','equalto','pending')|list|length }}</div>
                 <div class="label">Pending</div>
             </div>
 
-            <!-- Rejected Renewals -->
             <div class="stat-card rejected">
                 <div class="icon">❌</div>
-                <div class="number">{{ renewals|selectattr('status','equalto','Rejected')|list|length }}</div>
+                <div class="number">{{ renewals|selectattr('status','equalto','rejected')|list|length }}</div>
                 <div class="label">Rejected</div>
             </div>
         </div>
 
-        <!-- Divider -->
-        <div class="divider"></div>
-
         <!-- OVERALL SUMMARY -->
-        <div class="section-title">
-            📈 Overall Summary
-        </div>
+        <div class="summary-card">
+            <h3>📈 Overall Summary</h3>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <div class="number">{{ (new_applications|length + renewals|length) }}</div>
+                    <div class="label">Total Applications</div>
+                </div>
 
-        <div class="stats-grid">
-            <!-- Total All Applications -->
-            <div class="stat-card total">
-                <div class="icon">📊</div>
-                <div class="number">{{ (new_applications|length + renewals|length) }}</div>
-                <div class="label">Total Applications</div>
-            </div>
+                <div class="summary-item">
+                    <div class="number">{{ (new_applications|selectattr('status','equalto','approved')|list|length + renewals|selectattr('status','equalto','approved')|list|length) }}</div>
+                    <div class="label">Total Approved</div>
+                </div>
 
-            <!-- Total Approved -->
-            <div class="stat-card approved">
-                <div class="icon">✅</div>
-                <div class="number">{{ (new_applications|selectattr('status','equalto','Approved')|list|length + renewals|selectattr('status','equalto','Approved')|list|length) }}</div>
-                <div class="label">Total Approved</div>
-            </div>
+                <div class="summary-item">
+                    <div class="number">{{ (new_applications|selectattr('status','equalto','pending')|list|length + renewals|selectattr('status','equalto','pending')|list|length) }}</div>
+                    <div class="label">Total Pending</div>
+                </div>
 
-            <!-- Total Pending -->
-            <div class="stat-card pending">
-                <div class="icon">⏳</div>
-                <div class="number">{{ (new_applications|selectattr('status','equalto','Pending')|list|length + renewals|selectattr('status','equalto','Pending')|list|length) }}</div>
-                <div class="label">Total Pending</div>
-            </div>
-
-            <!-- Total Rejected -->
-            <div class="stat-card rejected">
-                <div class="icon">❌</div>
-                <div class="number">{{ (new_applications|selectattr('status','equalto','Rejected')|list|length + renewals|selectattr('status','equalto','Rejected')|list|length) }}</div>
-                <div class="label">Total Rejected</div>
+                <div class="summary-item">
+                    <div class="number">{{ (new_applications|selectattr('status','equalto','rejected')|list|length + renewals|selectattr('status','equalto','rejected')|list|length) }}</div>
+                    <div class="label">Total Rejected</div>
+                </div>
             </div>
         </div>
 
