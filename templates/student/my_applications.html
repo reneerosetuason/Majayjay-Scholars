@@ -245,22 +245,29 @@
                     <h4>📎 Submitted Documents</h4>
                     <div class="document-links">
                         {% if app.school_id %}
-                        <a href="/uploads/{{ app.school_id }}" class="doc-link" target="_blank">🆔 School ID</a>
+                        <a href="/static/uploads/{{ app.school_id }}" class="doc-link" target="_blank">🆔 School ID</a>
                         {% endif %}
                         {% if app.id_picture %}
-                        <a href="/uploads/{{ app.id_picture }}" class="doc-link" target="_blank">📷 ID Picture</a>
+                        <a href="/static/uploads/{{ app.id_picture }}" class="doc-link" target="_blank">📷 ID Picture</a>
                         {% endif %}
                         {% if app.birth_certificate %}
-                        <a href="/uploads/{{ app.birth_certificate }}" class="doc-link" target="_blank">📋 Birth Certificate</a>
+                        <a href="/static/uploads/{{ app.birth_certificate }}" class="doc-link" target="_blank">📋 Birth Certificate</a>
                         {% endif %}
                         {% if app.grades %}
-                        <a href="/uploads/{{ app.grades }}" class="doc-link" target="_blank">📊 Grades</a>
+                        <a href="/static/uploads/{{ app.grades }}" class="doc-link" target="_blank">📊 Grades</a>
                         {% endif %}
                         {% if app.cor %}
-                        <a href="/uploads/{{ app.cor }}" class="doc-link" target="_blank">📄 COR</a>
+                        <a href="/static/uploads/{{ app.cor }}" class="doc-link" target="_blank">📄 COR</a>
                         {% endif %}
                     </div>
                 </div>
+
+                <!-- EDIT BUTTON (Only for pending applications) -->
+                {% if app.status|lower == 'pending' %}
+                <div style="margin-top: 20px; text-align: right;">
+                    <a href="/edit_application/{{ app.application_id }}?type={{ app.type }}" style="background: linear-gradient(135deg, #7a5af5, #6745d1); color: white; padding: 10px 25px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block; transition: 0.3s;">✏️ Edit Application</a>
+                </div>
+                {% endif %}
 
             </div>
             {% endfor %}

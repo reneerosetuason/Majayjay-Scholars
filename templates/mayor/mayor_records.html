@@ -352,7 +352,8 @@
 
         <!-- Archive Toggle -->
         <div class="filter-tabs" style="margin-bottom: 15px;">
-            <a href="/mayor/records?archived=false" class="filter-btn {% if not show_archived %}active{% endif %}" style="text-decoration:none;">📋 Active Applications</a>
+            <a href="/mayor/records?archived=false&section=applications" class="filter-btn {% if not show_archived and section != 'renewals' %}active{% endif %}" style="text-decoration:none;">📋 Active Applications</a>
+            <a href="/mayor/records?section=renewals" class="filter-btn {% if section == 'renewals' %}active{% endif %}" style="text-decoration:none;">🔄 Renewal Applications</a>
             <a href="/mayor/records?archived=true" class="filter-btn {% if show_archived %}active{% endif %}" style="text-decoration:none;">🗄️ Archived Applications</a>
         </div>
 
@@ -362,11 +363,10 @@
             <button class="filter-btn" onclick="filterRecords('approved')">Approved</button>
             <button class="filter-btn" onclick="filterRecords('pending')">Pending</button>
             <button class="filter-btn" onclick="filterRecords('rejected')">Rejected</button>
-            <button class="filter-btn" onclick="filterRecords('new')">New</button>
-            <button class="filter-btn" onclick="filterRecords('renewal')">Renewal</button>
         </div>
 
-        <!-- Table -->
+        <!-- APPLICATIONS TABLE -->
+        {% if section != 'renewals' %}
         <div class="records-card">
             {% if applications %}
             <div class="table-header">
@@ -451,7 +451,11 @@
                             )"
                         >View</button>
                         
-                        {% if not show_archived %}
+                        {% if show_archived %}
+                        <form method="POST" action="{{ url_for('unarchive_application', application_id=app.application_id) }}" style="display:inline;" onsubmit="return confirm('Restore this application to active records?');">
+                            <button type="submit" class="btn-sm" style="background:#48bb78; color:white; margin-left:5px;">Unarchive</button>
+                        </form>
+                        {% else %}
                         <form method="POST" action="{{ url_for('archive_application', application_id=app.application_id) }}" style="display:inline;" onsubmit="return confirm('Are you sure you want to archive this application?');">
                             <button type="submit" class="btn-sm" style="background:#ff9800; color:white; margin-left:5px;">Archive</button>
                         </form>
@@ -468,6 +472,153 @@
             <p style="text-align:center; padding:40px; color:#777;">📭 No records found</p>
             {% endif %}
         </div>
+        {% endif %}
+
+        <!-- ARCHIVED RENEWALS IN ARCHIVED SECTION -->
+        {% if show_archived and renewals %}
+        <div class="records-card" style="margin-top:30px;">
+            <div class="table-header">
+                <h3>🗄️ Archived Renewals</h3>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>First Name</th>
+                        <th>Middle Name</th>
+                        <th>Last Name</th>
+                        <th>Student ID</th>
+                        <th>Course</th>
+                        <th>Year</th>
+                        <th>GWA</th>
+                        <th>Status</th>
+                        <th>Date Submitted</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for renewal in renewals %}
+                    <tr>
+                        <td>#{{ renewal.application_id }}</td>
+                        <td>{{ renewal.first_name }}</td>
+                        <td>{{ renewal.middle_name or '-' }}</td>
+                        <td>{{ renewal.last_name }}</td>
+                        <td>{{ renewal.student_id }}</td>
+                        <td>{{ renewal.course }}</td>
+                        <td>{{ renewal.year_level }}</td>
+                        <td style="font-weight:600; color:#7a5af5;">{{ renewal.gwa }}</td>
+                        <td>
+                            <span class="badge badge-{{ renewal.status|lower }}">
+                                {{ renewal.status|capitalize }}
+                            </span>
+                        </td>
+                        <td>{{ renewal.submission_date.strftime('%B %d, %Y') if renewal.submission_date else 'N/A' }}</td>
+                        <td style="white-space: nowrap;">
+                            <button class="btn-sm btn-view" onclick="viewRenewalDetails(
+                                '{{ renewal.application_id }}',
+                                '{{ renewal.first_name|e }}',
+                                '{{ renewal.middle_name|e }}',
+                                '{{ renewal.last_name|e }}',
+                                '{{ renewal.student_id|e }}',
+                                '{{ renewal.course|e }}',
+                                '{{ renewal.year_level|e }}',
+                                '{{ renewal.gwa }}',
+                                '{{ renewal.address|e }}',
+                                '{{ renewal.reason|e }}',
+                                '{{ renewal.status }}',
+                                '{{ renewal.submission_date.strftime('%B %d, %Y') if renewal.submission_date else 'N/A' }}',
+                                '{{ renewal.id_picture }}',
+                                '{{ renewal.birth_certificate }}',
+                                '{{ renewal.grades }}'
+                            )">View</button>
+                            
+                            <form method="POST" action="{{ url_for('unarchive_renewal', renewal_id=renewal.application_id) }}" style="display:inline;" onsubmit="return confirm('Restore this renewal to active records?');">
+                                <button type="submit" class="btn-sm" style="background:#48bb78; color:white; margin-left:5px;">Unarchive</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        <!-- RENEWAL APPLICATIONS SECTION -->
+        {% if section == 'renewals' %}
+        <div class="records-card">
+            <div class="table-header">
+                <h3>🔄 Renewal Applications</h3>
+                <div class="search-box">
+                    <input type="text" id="searchRenewals" placeholder="🔍 Search renewals..." onkeyup="searchRenewalsTable()">
+                </div>
+            </div>
+
+            {% if renewals %}
+            <table id="renewalsTable">
+                <thead>
+                    <tr>
+                        <th class="sortable" onclick="sortRenewalsTable(0)">ID</th>
+                        <th class="sortable" onclick="sortRenewalsTable(1)">First Name</th>
+                        <th class="sortable" onclick="sortRenewalsTable(2)">Middle Name</th>
+                        <th class="sortable" onclick="sortRenewalsTable(3)">Last Name</th>
+                        <th class="sortable" onclick="sortRenewalsTable(4)">Student ID</th>
+                        <th class="sortable" onclick="sortRenewalsTable(5)">Course</th>
+                        <th class="sortable" onclick="sortRenewalsTable(6)">Year</th>
+                        <th class="sortable" onclick="sortRenewalsTable(7)">GWA</th>
+                        <th class="sortable" onclick="sortRenewalsTable(8)">Status</th>
+                        <th class="sortable" onclick="sortRenewalsTable(9)">Date Submitted</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for renewal in renewals %}
+                    <tr data-status="{{ renewal.status|lower }}">
+                        <td>#{{ renewal.application_id }}</td>
+                        <td>{{ renewal.first_name }}</td>
+                        <td>{{ renewal.middle_name or '-' }}</td>
+                        <td>{{ renewal.last_name }}</td>
+                        <td>{{ renewal.student_id }}</td>
+                        <td>{{ renewal.course }}</td>
+                        <td>{{ renewal.year_level }}</td>
+                        <td style="font-weight:600; color:#7a5af5;">{{ renewal.gwa }}</td>
+                        <td>
+                            <span class="badge badge-{{ renewal.status|lower }}">
+                                {{ renewal.status|capitalize }}
+                            </span>
+                        </td>
+                        <td>{{ renewal.submission_date.strftime('%B %d, %Y') if renewal.submission_date else 'N/A' }}</td>
+                        <td style="white-space: nowrap;">
+                            <button class="btn-sm btn-view" onclick="viewRenewalDetails(
+                                '{{ renewal.application_id }}',
+                                '{{ renewal.first_name|e }}',
+                                '{{ renewal.middle_name|e }}',
+                                '{{ renewal.last_name|e }}',
+                                '{{ renewal.student_id|e }}',
+                                '{{ renewal.course|e }}',
+                                '{{ renewal.year_level|e }}',
+                                '{{ renewal.gwa }}',
+                                '{{ renewal.address|e }}',
+                                '{{ renewal.reason|e }}',
+                                '{{ renewal.status }}',
+                                '{{ renewal.submission_date.strftime('%B %d, %Y') if renewal.submission_date else 'N/A' }}',
+                                '{{ renewal.id_picture }}',
+                                '{{ renewal.birth_certificate }}',
+                                '{{ renewal.grades }}'
+                            )">View</button>
+                            
+                            <form method="POST" action="{{ url_for('archive_renewal', renewal_id=renewal.application_id) }}" style="display:inline;" onsubmit="return confirm('Are you sure you want to archive this renewal?');">
+                                <button type="submit" class="btn-sm" style="background:#ff9800; color:white; margin-left:5px;">Archive</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p style="text-align:center; padding:40px; color:#777;">📭 No renewal applications found</p>
+            {% endif %}
+        </div>
+        {% endif %}
     </div>
 
     <!-- Modal -->
@@ -554,21 +705,38 @@ function sortTable(columnIndex) {
 }
 
 function filterRecords(filter) {
-    const rows = document.querySelectorAll("#recordsTable tbody tr");
-    const buttons = document.querySelectorAll(".filter-btn");
-    buttons.forEach(b => b.classList.remove("active"));
-    event.target.classList.add("active");
+    const section = "{{ section }}";
+    
+    if (section === 'renewals') {
+        // Filter renewals table
+        const rows = document.querySelectorAll("#renewalsTable tbody tr");
+        const buttons = document.querySelectorAll(".filter-btn");
+        buttons.forEach(b => b.classList.remove("active"));
+        event.target.classList.add("active");
+        
+        rows.forEach(row => {
+            let status = row.dataset.status;
+            if (filter === "all") row.style.display = "";
+            else row.style.display = (status === filter) ? "" : "none";
+        });
+    } else {
+        // Filter applications table
+        const rows = document.querySelectorAll("#recordsTable tbody tr");
+        const buttons = document.querySelectorAll(".filter-btn");
+        buttons.forEach(b => b.classList.remove("active"));
+        event.target.classList.add("active");
 
-    rows.forEach(row => {
-        let status = row.dataset.status;
-        let type = row.dataset.type;
+        rows.forEach(row => {
+            let status = row.dataset.status;
+            let type = row.dataset.type;
 
-        if (filter === "all") row.style.display = "";
-        else if (filter === "new" || filter === "renewal")
-            row.style.display = (type === filter) ? "" : "none";
-        else
-            row.style.display = (status === filter) ? "" : "none";
-    });
+            if (filter === "all") row.style.display = "";
+            else if (filter === "new" || filter === "renewal")
+                row.style.display = (type === filter) ? "" : "none";
+            else
+                row.style.display = (status === filter) ? "" : "none";
+        });
+    }
 }
 
 function viewDetails(id, firstName, middleName, lastName, sid, course, year, gwa, address, reason, type, status, date, idpic, birth, grades) {
@@ -634,6 +802,139 @@ function closeModal() {
 document.getElementById("detailsModal").addEventListener("click", e => {
     if (e.target === e.currentTarget) closeModal();
 });
+
+function searchRenewalsTable() {
+    const input = document.getElementById("searchRenewals");
+    const filter = input.value.toLowerCase();
+    const table = document.getElementById("renewalsTable");
+    const rows = table.getElementsByTagName("tr");
+
+    for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        const cells = row.getElementsByTagName("td");
+        let found = false;
+
+        for (let j = 0; j < cells.length - 1; j++) {
+            const cell = cells[j];
+            if (cell) {
+                const text = cell.textContent || cell.innerText;
+                if (text.toLowerCase().indexOf(filter) > -1) {
+                    found = true;
+                    break;
+                }
+            }
+        }
+        row.style.display = found ? "" : "none";
+    }
+}
+
+let sortRenewalsDirection = {};
+
+function sortRenewalsTable(columnIndex) {
+    const table = document.getElementById("renewalsTable");
+    const tbody = table.getElementsByTagName("tbody")[0];
+    const rows = Array.from(tbody.getElementsByTagName("tr"));
+    const headers = table.getElementsByTagName("th");
+    
+    // Toggle sort direction
+    if (!sortRenewalsDirection[columnIndex]) sortRenewalsDirection[columnIndex] = 'asc';
+    else sortRenewalsDirection[columnIndex] = sortRenewalsDirection[columnIndex] === 'asc' ? 'desc' : 'asc';
+    
+    // Remove sort classes from all headers
+    for (let i = 0; i < headers.length; i++) {
+        headers[i].classList.remove('sort-asc', 'sort-desc');
+    }
+    
+    // Add sort class to current header
+    headers[columnIndex].classList.add(sortRenewalsDirection[columnIndex] === 'asc' ? 'sort-asc' : 'sort-desc');
+    
+    // Sort rows
+    rows.sort((a, b) => {
+        let aValue = a.getElementsByTagName("td")[columnIndex].textContent.trim();
+        let bValue = b.getElementsByTagName("td")[columnIndex].textContent.trim();
+        
+        // Handle numeric values (ID, GWA)
+        if (columnIndex === 0 || columnIndex === 7) {
+            aValue = parseFloat(aValue.replace('#', '')) || 0;
+            bValue = parseFloat(bValue.replace('#', '')) || 0;
+        }
+        
+        if (aValue < bValue) return sortRenewalsDirection[columnIndex] === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortRenewalsDirection[columnIndex] === 'asc' ? 1 : -1;
+        return 0;
+    });
+    
+    // Reorder rows in DOM
+    rows.forEach(row => tbody.appendChild(row));
+}
+
+function filterRenewals(filter) {
+    const rows = document.querySelectorAll("#renewalsTable tbody tr");
+    
+    rows.forEach(row => {
+        let status = row.dataset.status;
+        
+        if (filter === "all") {
+            row.style.display = "";
+        } else {
+            row.style.display = (status === filter) ? "" : "none";
+        }
+    });
+}
+
+function viewRenewalDetails(id, firstName, middleName, lastName, sid, course, year, gwa, address, reason, status, date, idpic, birth, grades) {
+    const modal = document.getElementById("detailsModal");
+    const body = document.getElementById("modalBody");
+    const fullName = `${firstName} ${middleName || ''} ${lastName}`.trim();
+    const showActions = status.toLowerCase() === 'pending';
+    
+    body.innerHTML = `
+        <div class="detail-row"><strong>Renewal ID:</strong><p>#${id}</p></div>
+        <div class="detail-row"><strong>Name:</strong><p>${fullName}</p></div>
+        <div class="detail-row"><strong>Student ID:</strong><p>${sid}</p></div>
+        <div class="detail-row"><strong>Course:</strong><p>${course}</p></div>
+        <div class="detail-row"><strong>Year Level:</strong><p>${year}</p></div>
+        <div class="detail-row"><strong>GWA:</strong><p style="font-weight:600; color:#7a5af5;">${gwa}</p></div>
+        <div class="detail-row"><strong>Address:</strong><p>${address}</p></div>
+        <div class="detail-row"><strong>Type:</strong><p><span class="badge badge-renewal">Renewal</span></p></div>
+        <div class="detail-row"><strong>Status:</strong><p><span class="badge badge-${status.toLowerCase()}">${status.charAt(0).toUpperCase() + status.slice(1)}</span></p></div>
+        <div class="detail-row"><strong>Date Submitted:</strong><p>${date}</p></div>
+
+        <div class="detail-row">
+            <strong>Reason:</strong>
+            <p style="background:#f7f7f7; padding:12px; border-radius:8px; margin-top:5px;">${reason}</p>
+        </div>
+
+        <div class="detail-row"><strong>📎 Documents:</strong></div>
+        <div class="detail-row" style="margin-left:15px;">
+            <p>📷 <a href="/static/uploads/${idpic}" target="_blank">ID Picture</a></p>
+        </div>
+        <div class="detail-row" style="margin-left:15px;">
+            <p>📋 <a href="/static/uploads/${birth}" target="_blank">Birth Certificate</a></p>
+        </div>
+        <div class="detail-row" style="margin-left:15px;">
+            <p>📊 <a href="/static/uploads/${grades}" target="_blank">Grades</a></p>
+        </div>
+
+        ${showActions ? `
+        <div class="modal-actions">
+            <form method="POST" action="/mayor/approve_renewal/${id}" style="flex:1;" onsubmit="return confirm('Are you sure you want to APPROVE this renewal?');">
+                <button type="submit" class="btn-approve">✓ Approve Renewal</button>
+            </form>
+            <form method="POST" action="/mayor/reject_renewal/${id}" style="flex:1;" onsubmit="return confirm('Are you sure you want to REJECT this renewal?');">
+                <button type="submit" class="btn-reject">✗ Reject Renewal</button>
+            </form>
+        </div>
+        ` : `
+        <div style="margin-top:20px; padding:15px; background:#f0f0f0; border-radius:8px; text-align:center; color:#666;">
+            <strong>Status: ${status.charAt(0).toUpperCase() + status.slice(1)}</strong><br>
+            <small>This renewal has been ${status.toLowerCase()}.</small>
+        </div>
+        `}
+    `;
+
+    modal.classList.add("active");
+}
 </script>
 
 </body>
