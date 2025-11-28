@@ -13,8 +13,8 @@
             box-sizing: border-box;
         }
         body {
-            background-color: #ede4ff;
-            font-family: 'Poppins', sans-serif;
+            background: #f7fafc;
+            font-family: 'Inter', sans-serif;
             min-height: 100vh;
             overflow-x: hidden;
         }
@@ -27,12 +27,13 @@
             right: 0;
             background: white;
             padding: 20px 40px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
             display: flex;
             justify-content: space-between;
             align-items: center;
             z-index: 900;
             transition: left 0.3s ease;
+            border-bottom: 1px solid #e2e8f0;
         }
         
         .sidebar.hide ~ .navbar {
@@ -46,34 +47,38 @@
         }
         
         .toggle-btn {
-            background: transparent;
+            background: rgba(102, 126, 234, 0.1);
             border: none;
             font-size: 24px;
-            color: #5b4ac7;
+            color: #667eea;
             cursor: pointer;
             padding: 5px 10px;
-            border-radius: 6px;
+            border-radius: 8px;
             transition: 0.3s;
         }
         
         .toggle-btn:hover {
-            background: rgba(91, 74, 199, 0.1);
+            background: rgba(102, 126, 234, 0.2);
+            transform: translateY(-2px);
         }
         
         .navbar h1 {
-            color: #5b4ac7;
+            color: #2d3748;
             font-size: 24px;
+            font-weight: 600;
         }
         .navbar a {
-            background-color: #7a5af5;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 8px 20px;
             border-radius: 8px;
             text-decoration: none;
-            transition: background-color 0.3s;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
         }
         .navbar a:hover {
-            background-color: #6745d1;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
         }
         
         /* Container - adjusted for sidebar */
@@ -93,23 +98,30 @@
         
         .header-card {
             background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 32px;
+            border-radius: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
             margin-bottom: 30px;
+            border: 1px solid #e2e8f0;
         }
         .header-card h2 {
-            color: #5b4ac7;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin-bottom: 10px;
         }
         .header-card p {
-            color: #666;
+            color: #718096;
         }
         .content-card {
             background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 32px;
+            border-radius: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid #e2e8f0;
         }
         .scholar-grid {
             display: grid;
@@ -118,28 +130,32 @@
             margin-top: 20px;
         }
         .scholar-card {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 12px;
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
             border-left: 4px solid #48bb78;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
         }
         .scholar-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(72, 187, 120, 0.15);
+            border-color: #48bb78;
         }
         .scholar-card h3 {
-            color: #333;
+            color: #2d3748;
             margin-bottom: 10px;
             font-size: 18px;
+            font-weight: 600;
         }
         .scholar-info {
             font-size: 14px;
-            color: #666;
+            color: #718096;
             margin: 5px 0;
         }
         .scholar-info strong {
-            color: #333;
+            color: #4a5568;
         }
         .badge {
             display: inline-block;

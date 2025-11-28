@@ -495,11 +495,18 @@ def mayor_dashboard():
         WHERE archived = FALSE OR archived IS NULL
     """)
     applications = cursor.fetchall()
+    
+    # Get all active renewals from renew table
+    cursor.execute("""
+        SELECT status 
+        FROM renew 
+        WHERE archived = FALSE OR archived IS NULL
+    """)
+    renewals = cursor.fetchall()
     cursor.close()
     
-    # Separate by type
+    # Filter new applications only
     new_apps = [a for a in applications if a['scholarship_type'] == 'new']
-    renewals = [a for a in applications if a['scholarship_type'] == 'renewal']
     
     return render_template('mayor/mayor_dashboard.html', 
                          name=name, 
@@ -514,17 +521,17 @@ def admin_dashboard():
         
         cursor = db.cursor(dictionary=True)
 
-        # Get all users
-        cursor.execute("SELECT user_id, name, email, user_type FROM users")
+        # Get all users with first_name, middle_name, last_name
+        cursor.execute("SELECT user_id, first_name, middle_name, last_name, email, user_type FROM users")
         users = cursor.fetchall()
 
-        # Get current mayor's name
-        cursor.execute("SELECT name FROM users WHERE user_id = %s", (session['user_id'],))
+        # Get current admin's name
+        cursor.execute("SELECT first_name, last_name FROM users WHERE user_id = %s", (session['user_id'],))
         current_admin = cursor.fetchone()
         cursor.close()
 
-        # If name is not found, fallback to email
-        name = current_admin['name'] if current_admin and current_admin['name'] else session.get('email')
+        # Build full name or fallback to email
+        name = f"{current_admin['first_name']} {current_admin['last_name']}" if current_admin else session.get('email')
 
         return render_template('admin/admin_dashboard.html', users=users, name=name)
 
