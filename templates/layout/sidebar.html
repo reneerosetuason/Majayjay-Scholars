@@ -17,7 +17,7 @@
             left: 0;
             top: 0;
             transition: all 0.3s ease;
-            z-index: 1000;
+            z-index: 1100;
             border-right: 1px solid #e2e8f0;
         }
         .sidebar.hide {
@@ -107,10 +107,6 @@
     {% elif session.get('user_type') == 'mayor' %}
         <a href="/mayor" class="{{ 'active' if request.path == '/mayor' else '' }}">🏛 Mayor Dashboard</a>
 
-        <a href="/mayor/scholars" class="{{ 'active' if request.path == '/mayor/scholars' else '' }}">
-            👥 View Scholars
-        </a>
-
         <a href="/mayor/records" class="{{ 'active' if request.path == '/mayor/records' else '' }}">
             📁 Scholar Records
         </a>
@@ -120,12 +116,16 @@
 
         <a href="/admin/add_admin" class="{{ 'active' if request.path == '/admin/add_admin' else '' }}">
             👥 Add Admin Account
-        </a>
+        <!-- </a> -->
 
-        <a href="/admin/add_mayor" class="{{ 'active' if request.path == '/admin/add_mayor' else '' }}">
-            📁 Add Mayor Account
-        </a>
+        <!-- <a href="/admin/add_mayor" class="{{ 'active' if request.path == '/admin/add_mayor' else '' }}">
+            📁 Add Mayor Account -->
+        <!-- </a> -->
     {% endif %}
+
+    <a href="/edit_profile" class="{{ 'active' if request.path == '/edit_profile' else '' }}">
+        👤 Edit Profile
+    </a>
 
     <a href="/logout" class="logout-btn">Logout</a>
 </div>

@@ -311,6 +311,26 @@
         <div class="section-title">
             🔄 Scholarship Renewals
         </div>
+        
+        <!-- Renewal Control -->
+        <form method="POST" action="{{ url_for('toggle_renewal') }}" style="margin-bottom: 20px;">
+            <button type="submit" style="
+                padding: 12px 24px;
+                background: {% if renewal_open %}linear-gradient(135deg, #f56565 0%, #e53e3e 100%){% else %}linear-gradient(135deg, #48bb78 0%, #38a169 100%){% endif %};
+                color: white;
+                border: none;
+                border-radius: 12px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.1)'">
+                {% if renewal_open %}🔒 Close Renewals{% else %}🔓 Open Renewals{% endif %}
+            </button>
+            <span style="margin-left: 15px; color: #718096; font-size: 14px;">
+                Status: <strong style="color: {% if renewal_open %}#48bb78{% else %}#f56565{% endif %};">{% if renewal_open %}Open{% else %}Closed{% endif %}</strong>
+            </span>
+        </form>
 
         <div class="stats-grid">
             <div class="stat-card total">

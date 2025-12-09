@@ -343,7 +343,6 @@
             <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
             <h1>📁 Scholar Records</h1>
         </div>
-        <a href="/mayor">← Back to Dashboard</a>
     </nav>
 
     <!-- MAIN CONTENT -->
@@ -371,12 +370,14 @@
         </div>
 
         <!-- Filters -->
+        {% if not show_archived %}
         <div class="filter-tabs">
             <button class="filter-btn active" onclick="filterRecords('all')">All</button>
             <button class="filter-btn" onclick="filterRecords('approved')">Approved</button>
             <button class="filter-btn" onclick="filterRecords('pending')">Pending</button>
             <button class="filter-btn" onclick="filterRecords('rejected')">Rejected</button>
         </div>
+        {% endif %}
 
         <!-- APPLICATIONS TABLE -->
         {% if section != 'renewals' %}
@@ -458,9 +459,11 @@
                                 '{{ app.scholarship_type }}',
                                 '{{ app.status }}',
                                 '{{ app.submission_date.strftime('%B %d, %Y') if app.submission_date else 'N/A' }}',
+                                '{{ app.school_id }}',
                                 '{{ app.id_picture }}',
                                 '{{ app.birth_certificate }}',
-                                '{{ app.grades }}'
+                                '{{ app.grades }}',
+                                '{{ app.cor }}'
                             )"
                         >View</button>
                         
@@ -482,7 +485,9 @@
             </table>
 
             {% else %}
+            {% if not (show_archived and renewals) %}
             <p style="text-align:center; padding:40px; color:#777;">📭 No records found</p>
+            {% endif %}
             {% endif %}
         </div>
         {% endif %}
@@ -752,7 +757,7 @@ function filterRecords(filter) {
     }
 }
 
-function viewDetails(id, firstName, middleName, lastName, sid, course, year, gwa, address, reason, type, status, date, idpic, birth, grades) {
+function viewDetails(id, firstName, middleName, lastName, sid, course, year, gwa, address, reason, type, status, date, schoolId, idPic, birth, grades, cor) {
     const modal = document.getElementById("detailsModal");
     const body = document.getElementById("modalBody");
     const fullName = `${firstName} ${middleName || ''} ${lastName}`.trim();
@@ -779,13 +784,19 @@ function viewDetails(id, firstName, middleName, lastName, sid, course, year, gwa
 
         <div class="detail-row"><strong>📎 Documents:</strong></div>
         <div class="detail-row" style="margin-left:15px;">
-            <p>📷 <a href="/static/uploads/${idpic}" target="_blank">ID Picture</a></p>
+            <p>🆔 <a href="/static/uploads/${schoolId}" target="_blank">School ID</a></p>
+        </div>
+        <div class="detail-row" style="margin-left:15px;">
+            <p>📷 <a href="/static/uploads/${idPic}" target="_blank">2x2 ID Picture</a></p>
         </div>
         <div class="detail-row" style="margin-left:15px;">
             <p>📋 <a href="/static/uploads/${birth}" target="_blank">Birth Certificate</a></p>
         </div>
         <div class="detail-row" style="margin-left:15px;">
-            <p>📊 <a href="/static/uploads/${grades}" target="_blank">Grades</a></p>
+            <p>📊 <a href="/static/uploads/${grades}" target="_blank">Copy of Grades</a></p>
+        </div>
+        <div class="detail-row" style="margin-left:15px;">
+            <p>📄 <a href="/static/uploads/${cor}" target="_blank">COR</a></p>
         </div>
 
         ${showActions ? `
@@ -895,7 +906,7 @@ function filterRenewals(filter) {
     });
 }
 
-function viewRenewalDetails(id, firstName, middleName, lastName, sid, course, year, gwa, address, reason, status, date, idpic, birth, grades) {
+function viewRenewalDetails(id, firstName, middleName, lastName, sid, course, year, gwa, address, reason, status, date, schoolId, idPic, birth, grades, cor) {
     const modal = document.getElementById("detailsModal");
     const body = document.getElementById("modalBody");
     const fullName = `${firstName} ${middleName || ''} ${lastName}`.trim();
@@ -920,13 +931,19 @@ function viewRenewalDetails(id, firstName, middleName, lastName, sid, course, ye
 
         <div class="detail-row"><strong>📎 Documents:</strong></div>
         <div class="detail-row" style="margin-left:15px;">
-            <p>📷 <a href="/static/uploads/${idpic}" target="_blank">ID Picture</a></p>
+            <p>🆔 <a href="/static/uploads/${schoolId}" target="_blank">School ID</a></p>
+        </div>
+        <div class="detail-row" style="margin-left:15px;">
+            <p>📷 <a href="/static/uploads/${idPic}" target="_blank">2x2 ID Picture</a></p>
         </div>
         <div class="detail-row" style="margin-left:15px;">
             <p>📋 <a href="/static/uploads/${birth}" target="_blank">Birth Certificate</a></p>
         </div>
         <div class="detail-row" style="margin-left:15px;">
-            <p>📊 <a href="/static/uploads/${grades}" target="_blank">Grades</a></p>
+            <p>📊 <a href="/static/uploads/${grades}" target="_blank">Copy of Grades</a></p>
+        </div>
+        <div class="detail-row" style="margin-left:15px;">
+            <p>📄 <a href="/static/uploads/${cor}" target="_blank">COR</a></p>
         </div>
 
         ${showActions ? `
