@@ -356,10 +356,10 @@
 
         <!-- Stats -->
         <div class="stats-grid">
-            <div class="stat-card total"><div class="number">{{ applications|length }}</div><div class="label">Total</div></div>
-            <div class="stat-card approved"><div class="number">{{ applications|selectattr('status','equalto','approved')|list|length }}</div><div class="label">Approved</div></div>
-            <div class="stat-card pending"><div class="number">{{ applications|selectattr('status','equalto','pending')|list|length }}</div><div class="label">Pending</div></div>
-            <div class="stat-card rejected"><div class="number">{{ applications|selectattr('status','equalto','rejected')|list|length }}</div><div class="label">Rejected</div></div>
+            <div class="stat-card total"><div class="number">{{ (applications|length) + (renewals|length) }}</div><div class="label">Total</div></div>
+            <div class="stat-card approved"><div class="number">{{ applications|length }}</div><div class="label">Active Applications</div></div>
+            <div class="stat-card" style="border-color: #7c3aed;"><div class="number" style="color: #7c3aed;">{{ renewals|length }}</div><div class="label">Renewal Applications</div></div>
+            <div class="stat-card rejected"><div class="number">{{ archived_count|default(0) }}</div><div class="label">Archived Applications</div></div>
         </div>
 
         <!-- Archive Toggle -->
@@ -444,21 +444,22 @@
                         </td>
 
                         <td style="white-space: nowrap;">
+                            {% set date_str = app.submission_date.strftime('%B %d, %Y') if app.submission_date else 'N/A' %}
                             <button class="btn-sm btn-view"
                             onclick="viewDetails(
                                 '{{ app.application_id }}',
                                 '{{ app.first_name|e }}',
                                 '{{ app.middle_name|e }}',
                                 '{{ app.last_name|e }}',
-                                `{{ app.student_id|e }}`,
-                                `{{ app.course|e }}`,
-                                `{{ app.year_level|e }}`,
+                                '{{ app.student_id|e }}',
+                                '{{ app.course|e }}',
+                                '{{ app.year_level|e }}',
                                 '{{ app.gwa }}',
-                                `{{ app.address|e }}`,
-                                `{{ app.reason|e }}`,
+                                '{{ app.address|e }}',
+                                '{{ app.reason|e }}',
                                 '{{ app.scholarship_type }}',
                                 '{{ app.status }}',
-                                '{{ app.submission_date.strftime('%B %d, %Y') if app.submission_date else 'N/A' }}',
+                                '{{ date_str }}',
                                 '{{ app.school_id }}',
                                 '{{ app.id_picture }}',
                                 '{{ app.birth_certificate }}',
@@ -532,6 +533,7 @@
                         </td>
                         <td>{{ renewal.submission_date.strftime('%B %d, %Y') if renewal.submission_date else 'N/A' }}</td>
                         <td style="white-space: nowrap;">
+                            {% set renewal_date = renewal.submission_date.strftime('%B %d, %Y') if renewal.submission_date else 'N/A' %}
                             <button class="btn-sm btn-view" onclick="viewRenewalDetails(
                                 '{{ renewal.application_id }}',
                                 '{{ renewal.first_name|e }}',
@@ -544,10 +546,12 @@
                                 '{{ renewal.address|e }}',
                                 '{{ renewal.reason|e }}',
                                 '{{ renewal.status }}',
-                                '{{ renewal.submission_date.strftime('%B %d, %Y') if renewal.submission_date else 'N/A' }}',
+                                '{{ renewal_date }}',
+                                '{{ renewal.school_id }}',
                                 '{{ renewal.id_picture }}',
                                 '{{ renewal.birth_certificate }}',
-                                '{{ renewal.grades }}'
+                                '{{ renewal.grades }}',
+                                '{{ renewal.cor }}'
                             )">View</button>
                             
                             <form method="POST" action="{{ url_for('unarchive_renewal', renewal_id=renewal.application_id) }}" style="display:inline;" onsubmit="return confirm('Restore this renewal to active records?');">
@@ -606,6 +610,7 @@
                         </td>
                         <td>{{ renewal.submission_date.strftime('%B %d, %Y') if renewal.submission_date else 'N/A' }}</td>
                         <td style="white-space: nowrap;">
+                            {% set renewal_date2 = renewal.submission_date.strftime('%B %d, %Y') if renewal.submission_date else 'N/A' %}
                             <button class="btn-sm btn-view" onclick="viewRenewalDetails(
                                 '{{ renewal.application_id }}',
                                 '{{ renewal.first_name|e }}',
@@ -618,10 +623,12 @@
                                 '{{ renewal.address|e }}',
                                 '{{ renewal.reason|e }}',
                                 '{{ renewal.status }}',
-                                '{{ renewal.submission_date.strftime('%B %d, %Y') if renewal.submission_date else 'N/A' }}',
+                                '{{ renewal_date2 }}',
+                                '{{ renewal.school_id }}',
                                 '{{ renewal.id_picture }}',
                                 '{{ renewal.birth_certificate }}',
-                                '{{ renewal.grades }}'
+                                '{{ renewal.grades }}',
+                                '{{ renewal.cor }}'
                             )">View</button>
                             
                             <form method="POST" action="{{ url_for('archive_renewal', renewal_id=renewal.application_id) }}" style="display:inline;" onsubmit="return confirm('Are you sure you want to archive this renewal?');">
@@ -929,21 +936,21 @@ function viewRenewalDetails(id, firstName, middleName, lastName, sid, course, ye
             <p style="background:#f7f7f7; padding:12px; border-radius:8px; margin-top:5px;">${reason}</p>
         </div>
 
-        <div class="detail-row"><strong>📎 Documents:</strong></div>
+        <div class="detail-row"><strong>Documents:</strong></div>
         <div class="detail-row" style="margin-left:15px;">
-            <p>🆔 <a href="/static/uploads/${schoolId}" target="_blank">School ID</a></p>
+            <p>School ID: <a href="/static/uploads/${schoolId}" target="_blank">View</a></p>
         </div>
         <div class="detail-row" style="margin-left:15px;">
-            <p>📷 <a href="/static/uploads/${idPic}" target="_blank">2x2 ID Picture</a></p>
+            <p>2x2 ID Picture: <a href="/static/uploads/${idPic}" target="_blank">View</a></p>
         </div>
         <div class="detail-row" style="margin-left:15px;">
-            <p>📋 <a href="/static/uploads/${birth}" target="_blank">Birth Certificate</a></p>
+            <p>Birth Certificate: <a href="/static/uploads/${birth}" target="_blank">View</a></p>
         </div>
         <div class="detail-row" style="margin-left:15px;">
-            <p>📊 <a href="/static/uploads/${grades}" target="_blank">Copy of Grades</a></p>
+            <p>Copy of Grades: <a href="/static/uploads/${grades}" target="_blank">View</a></p>
         </div>
         <div class="detail-row" style="margin-left:15px;">
-            <p>📄 <a href="/static/uploads/${cor}" target="_blank">COR</a></p>
+            <p>COR: <a href="/static/uploads/${cor}" target="_blank">View</a></p>
         </div>
 
         ${showActions ? `

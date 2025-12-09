@@ -40,7 +40,7 @@
     <div class="form-card">
         <h2>Edit Your Application</h2>
         
-        <form action="/edit_application/{{ app.renewal_id if app_type == 'renewal' else app.application_id }}?type={{ app_type }}" method="POST" enctype="multipart/form-data">
+        <form action="/edit_application/{{ app.get('renewal_id', app.get('application_id')) }}?type={{ app_type }}" method="POST" enctype="multipart/form-data">
             
             <!-- Read-only fields -->
             <label>Full Name (Cannot be changed)</label>

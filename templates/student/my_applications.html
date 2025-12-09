@@ -269,7 +269,7 @@
                 <!-- EDIT BUTTON (Only for pending applications) -->
                 {% if app.status|lower == 'pending' %}
                 <div style="margin-top: 20px; text-align: right;">
-                    <a href="/edit_application/{{ app.application_id }}?type={{ app.type }}" style="background: linear-gradient(135deg, #7a5af5, #6745d1); color: white; padding: 10px 25px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block; transition: 0.3s;">✏️ Edit Application</a>
+                    <a href="/edit_application/{{ app.get('renewal_id', app.get('application_id')) }}?type={{ app.type }}" style="background: linear-gradient(135deg, #7a5af5, #6745d1); color: white; padding: 10px 25px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block; transition: 0.3s;">✏️ Edit Application</a>
                 </div>
                 {% endif %}
 

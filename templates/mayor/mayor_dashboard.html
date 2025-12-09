@@ -176,6 +176,39 @@
         .stat-card.rejected .number { color: #f56565; }
         .stat-card.rejected:hover { border-color: #f56565; background: #fef2f2; }
 
+        /* Renewal Toggle Button */
+        .renewal-toggle-btn {
+            padding: 12px 24px;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .renewal-toggle-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+        .btn-close {
+            background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+        }
+        .btn-open {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        }
+        .renewal-status {
+            margin-left: 15px;
+            color: #718096;
+            font-size: 14px;
+        }
+        .status-open {
+            color: #48bb78;
+        }
+        .status-closed {
+            color: #f56565;
+        }
+
         /* Summary Card */
         .summary-card {
             background: white;
@@ -314,21 +347,11 @@
         
         <!-- Renewal Control -->
         <form method="POST" action="{{ url_for('toggle_renewal') }}" style="margin-bottom: 20px;">
-            <button type="submit" style="
-                padding: 12px 24px;
-                background: {% if renewal_open %}linear-gradient(135deg, #f56565 0%, #e53e3e 100%){% else %}linear-gradient(135deg, #48bb78 0%, #38a169 100%){% endif %};
-                color: white;
-                border: none;
-                border-radius: 12px;
-                font-weight: 600;
-                cursor: pointer;
-                transition: all 0.3s;
-                box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.1)'">
+            <button type="submit" class="renewal-toggle-btn {% if renewal_open %}btn-close{% else %}btn-open{% endif %}">
                 {% if renewal_open %}🔒 Close Renewals{% else %}🔓 Open Renewals{% endif %}
             </button>
-            <span style="margin-left: 15px; color: #718096; font-size: 14px;">
-                Status: <strong style="color: {% if renewal_open %}#48bb78{% else %}#f56565{% endif %};">{% if renewal_open %}Open{% else %}Closed{% endif %}</strong>
+            <span class="renewal-status">
+                Status: <strong class="{% if renewal_open %}status-open{% else %}status-closed{% endif %}">{% if renewal_open %}Open{% else %}Closed{% endif %}</strong>
             </span>
         </form>
 
@@ -341,19 +364,19 @@
 
             <div class="stat-card approved">
                 <div class="icon">✅</div>
-                <div class="number">{{ renewals|selectattr('status','equalto','approved')|list|length }}</div>
+                <div class="number">{{ renewals|selectattr('status','equalto','Approved')|list|length }}</div>
                 <div class="label">Approved</div>
             </div>
 
             <div class="stat-card pending">
                 <div class="icon">⏳</div>
-                <div class="number">{{ renewals|selectattr('status','equalto','pending')|list|length }}</div>
+                <div class="number">{{ renewals|selectattr('status','equalto','Pending')|list|length }}</div>
                 <div class="label">Pending</div>
             </div>
 
             <div class="stat-card rejected">
                 <div class="icon">❌</div>
-                <div class="number">{{ renewals|selectattr('status','equalto','rejected')|list|length }}</div>
+                <div class="number">{{ renewals|selectattr('status','equalto','Rejected')|list|length }}</div>
                 <div class="label">Rejected</div>
             </div>
         </div>
@@ -368,17 +391,17 @@
                 </div>
 
                 <div class="summary-item">
-                    <div class="number">{{ (new_applications|selectattr('status','equalto','approved')|list|length + renewals|selectattr('status','equalto','approved')|list|length) }}</div>
+                    <div class="number">{{ (new_applications|selectattr('status','equalto','approved')|list|length + renewals|selectattr('status','equalto','Approved')|list|length) }}</div>
                     <div class="label">Total Approved</div>
                 </div>
 
                 <div class="summary-item">
-                    <div class="number">{{ (new_applications|selectattr('status','equalto','pending')|list|length + renewals|selectattr('status','equalto','pending')|list|length) }}</div>
+                    <div class="number">{{ (new_applications|selectattr('status','equalto','pending')|list|length + renewals|selectattr('status','equalto','Pending')|list|length) }}</div>
                     <div class="label">Total Pending</div>
                 </div>
 
                 <div class="summary-item">
-                    <div class="number">{{ (new_applications|selectattr('status','equalto','rejected')|list|length + renewals|selectattr('status','equalto','rejected')|list|length) }}</div>
+                    <div class="number">{{ (new_applications|selectattr('status','equalto','rejected')|list|length + renewals|selectattr('status','equalto','Rejected')|list|length) }}</div>
                     <div class="label">Total Rejected</div>
                 </div>
             </div>
