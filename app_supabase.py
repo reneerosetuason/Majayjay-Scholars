@@ -434,15 +434,17 @@ def mayor_dashboard():
         mayor = mayor_response.data[0] if mayor_response.data else None
         name = f"{mayor['first_name']} {mayor['last_name']}" if mayor else session.get('email')
         
-        apps_response = supabase.table('application').select('status').or_('archived.is.null,archived.eq.false').execute()
-        new_apps = apps_response.data if apps_response.data else []
+        apps_response = supabase.table('application').select('scholarship_type, status').or_('archived.is.null,archived.eq.false').execute()
+        applications = apps_response.data if apps_response.data else []
         
         renewals_response = supabase.table('renew').select('status').or_('archived.is.null,archived.eq.false').execute()
         renewals = renewals_response.data if renewals_response.data else []
         
+        new_apps = [a for a in applications if a.get('scholarship_type') == 'new']
+        
         # Get renewal status
-        settings_response = supabase.table('renewal_settings').select('is_open').eq('id', 1).execute()
-        renewal_open = settings_response.data[0]['is_open'] if settings_response.data else False
+        settings_response = supabase.table('system_settings').select('setting_value').eq('setting_key', 'renewal_open').execute()
+        renewal_open = settings_response.data[0]['setting_value'] == 'true' if settings_response.data else False
         
         return render_template('mayor/mayor_dashboard.html', name=name, new_applications=new_apps, renewals=renewals, renewal_open=renewal_open)
     except Exception as e:
@@ -584,8 +586,8 @@ def renew():
 
     try:
         # Check if renewals are open
-        settings_response = supabase.table('renewal_settings').select('is_open').eq('id', 1).execute()
-        renewal_open = settings_response.data[0]['is_open'] if settings_response.data else False
+        settings_response = supabase.table('system_settings').select('setting_value').eq('setting_key', 'renewal_open').execute()
+        renewal_open = settings_response.data[0]['setting_value'] == 'true' if settings_response.data else False
         
         if not renewal_open:
             flash("Renewal applications are currently closed. Please check back later.", "error")
@@ -681,7 +683,6 @@ def my_applications():
         return redirect(url_for('login'))
     
     try:
-        # Get regular applications
         apps_response = supabase.table('application').select('*').eq('user_id', session['user_id']).execute()
         applications = apps_response.data if apps_response.data else []
         
@@ -694,24 +695,21 @@ def my_applications():
                 except:
                     app['submission_date'] = datetime.now()
         
-        # Get renewal applications
         renewals_response = supabase.table('renew').select('*').eq('user_id', session['user_id']).execute()
         renewals = renewals_response.data if renewals_response.data else []
         
         for renewal in renewals:
+            renewal['application_id'] = renewal['renewal_id']
             renewal['type'] = 'renewal'
-            renewal['scholarship_type'] = 'renewal'
             # Convert submission_date string to datetime
             if renewal.get('submission_date') and isinstance(renewal['submission_date'], str):
                 try:
                     renewal['submission_date'] = datetime.fromisoformat(renewal['submission_date'].replace('Z', '+00:00'))
                 except:
                     renewal['submission_date'] = datetime.now()
+            renewal['updated_at'] = renewal['submission_date']
         
-        # Combine both lists
         all_applications = applications + renewals
-        
-        # Sort by submission date
         all_applications.sort(key=lambda x: x['submission_date'], reverse=True)
         
         return render_template('student/my_applications.html', applications=all_applications)
@@ -785,38 +783,38 @@ def edit_application(app_id):
 #     if 'user_id' not in session:
 #         flash("Please log in first.", "error")
 #         return redirect(url_for('login'))
-#     
+    
 #     try:
 #         if request.method == 'POST':
 #             first_name = request.form.get('first_name')
 #             middle_name = request.form.get('middle_name')
 #             last_name = request.form.get('last_name')
 #             password = request.form.get('password', '').strip()
-#             
+            
 #             # Build update dictionary
 #             update_data = {
 #                 'first_name': first_name,
 #                 'middle_name': middle_name,
 #                 'last_name': last_name
 #             }
-#             
+            
 #             # Add password to update if provided
 #             if password:
 #                 update_data['password'] = password
-#             
+            
 #             # Execute update
 #             supabase.table('users').update(update_data).eq('user_id', session['user_id']).execute()
-#             
+            
 #             flash("Profile updated successfully!", "success")
 #             return redirect(url_for('edit_profile'))
-#         
+        
 #         user_response = supabase.table('users').select('first_name, middle_name, last_name, email').eq('user_id', session['user_id']).execute()
 #         user = user_response.data[0] if user_response.data else None
-#         
+        
 #         if not user:
 #             flash("User not found.", "error")
 #             return redirect(url_for('login'))
-#         
+        
 #         return render_template('edit_profile.html', user=user)
 #     except Exception as e:
 #         print(f"[ERROR] Edit profile error: {e}")
@@ -831,27 +829,19 @@ def logout():
 
 @app.route('/mayor/records')
 def mayor_records():
-    if 'user_id' not in session:
-        flash("Please log in first.", "error")
-        return redirect(url_for('login'))
+    print(f"[DEBUG] mayor_records route accessed")
+    print(f"[DEBUG] Session user_type: {session.get('user_type')}")
+    print(f"[DEBUG] Session data: {dict(session)}")
     
-    if session.get('user_type', '').lower() != 'mayor':
+    if session.get('user_type') != 'mayor':
+        print(f"[DEBUG] Access denied - user_type is not mayor")
         flash("Access denied!", "error")
         return redirect(url_for('login'))
 
     show_archived = request.args.get('archived', 'false').lower() == 'true'
-    section = request.args.get('section', 'applications')
+    print(f"[DEBUG] show_archived: {show_archived}")
     
     try:
-        # Get archived count
-        archived_count = 0
-        try:
-            archived_apps_response = supabase.table('application').select('application_id', count='exact').eq('archived', True).execute()
-            archived_renewals_response = supabase.table('renew').select('renewal_id', count='exact').eq('archived', True).execute()
-            archived_count = (archived_apps_response.count or 0) + (archived_renewals_response.count or 0)
-        except:
-            pass
-        
         if show_archived:
             apps_response = supabase.table('application').select('*').eq('archived', True).order('submission_date', desc=True).execute()
             renewals_response = supabase.table('renew').select('*').eq('archived', True).order('submission_date', desc=True).execute()
@@ -877,22 +867,26 @@ def mayor_records():
                 except:
                     renewal['submission_date'] = None
         
-        return render_template('mayor/mayor_records.html', 
-                             applications=applications, 
-                             renewals=renewals, 
-                             show_archived=show_archived, 
-                             section=section, 
-                             archived_count=archived_count)
+        print(f"[DEBUG] Found {len(applications)} applications and {len(renewals)} renewals")
+        
+        section = request.args.get('section', 'applications')
+        print(f"[DEBUG] Rendering template with section: {section}")
+        print(f"[DEBUG] Template variables - applications: {len(applications)}, renewals: {len(renewals)}, show_archived: {show_archived}, section: {section}")
+        
+        try:
+            return render_template('mayor/mayor_records.html', applications=applications, renewals=renewals, show_archived=show_archived, section=section)
+        except Exception as template_error:
+            print(f"[ERROR] Template rendering error: {template_error}")
+            import traceback
+            traceback.print_exc()
+            flash(f"Template error: {str(template_error)}", "error")
+            return redirect(url_for('mayor_dashboard'))
     except Exception as e:
         print(f"[ERROR] Mayor records error: {e}")
         import traceback
         traceback.print_exc()
-        return render_template('mayor/mayor_records.html', 
-                             applications=[], 
-                             renewals=[], 
-                             show_archived=False, 
-                             section='applications', 
-                             archived_count=0)
+        flash("Error loading records", "error")
+        return redirect(url_for('mayor_dashboard'))
 
 @app.route('/mayor/approve/<int:application_id>', methods=['POST'])
 def approve_application(application_id):
@@ -1135,11 +1129,11 @@ def toggle_renewal():
         return redirect(url_for('login'))
     
     try:
-        settings_response = supabase.table('renewal_settings').select('is_open').eq('id', 1).execute()
-        current_value = settings_response.data[0]['is_open'] if settings_response.data else False
-        new_value = not current_value
+        settings_response = supabase.table('system_settings').select('setting_value').eq('setting_key', 'renewal_open').execute()
+        current_value = settings_response.data[0]['setting_value'] if settings_response.data else 'false'
+        new_value = 'false' if current_value == 'true' else 'true'
         
-        supabase.table('renewal_settings').update({'is_open': new_value, 'updated_at': datetime.now().isoformat()}).eq('id', 1).execute()
+        supabase.table('system_settings').update({'setting_value': new_value, 'updated_at': datetime.now().isoformat()}).eq('setting_key', 'renewal_open').execute()
         
         status = "opened" if new_value == 'true' else "closed"
         flash(f"Renewal applications have been {status}.", "success")
