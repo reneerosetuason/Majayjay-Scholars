@@ -434,17 +434,15 @@ def mayor_dashboard():
         mayor = mayor_response.data[0] if mayor_response.data else None
         name = f"{mayor['first_name']} {mayor['last_name']}" if mayor else session.get('email')
         
-        apps_response = supabase.table('application').select('scholarship_type, status').or_('archived.is.null,archived.eq.false').execute()
-        applications = apps_response.data if apps_response.data else []
+        apps_response = supabase.table('application').select('status').or_('archived.is.null,archived.eq.false').execute()
+        new_apps = apps_response.data if apps_response.data else []
         
         renewals_response = supabase.table('renew').select('status').or_('archived.is.null,archived.eq.false').execute()
         renewals = renewals_response.data if renewals_response.data else []
         
-        new_apps = [a for a in applications if a.get('scholarship_type') == 'new']
-        
         # Get renewal status
-        settings_response = supabase.table('system_settings').select('setting_value').eq('setting_key', 'renewal_open').execute()
-        renewal_open = settings_response.data[0]['setting_value'] == 'true' if settings_response.data else False
+        settings_response = supabase.table('renewal_settings').select('is_open').eq('id', 1).execute()
+        renewal_open = settings_response.data[0]['is_open'] if settings_response.data else False
         
         return render_template('mayor/mayor_dashboard.html', name=name, new_applications=new_apps, renewals=renewals, renewal_open=renewal_open)
     except Exception as e:
@@ -586,8 +584,8 @@ def renew():
 
     try:
         # Check if renewals are open
-        settings_response = supabase.table('system_settings').select('setting_value').eq('setting_key', 'renewal_open').execute()
-        renewal_open = settings_response.data[0]['setting_value'] == 'true' if settings_response.data else False
+        settings_response = supabase.table('renewal_settings').select('is_open').eq('id', 1).execute()
+        renewal_open = settings_response.data[0]['is_open'] if settings_response.data else False
         
         if not renewal_open:
             flash("Renewal applications are currently closed. Please check back later.", "error")
@@ -1129,11 +1127,11 @@ def toggle_renewal():
         return redirect(url_for('login'))
     
     try:
-        settings_response = supabase.table('system_settings').select('setting_value').eq('setting_key', 'renewal_open').execute()
-        current_value = settings_response.data[0]['setting_value'] if settings_response.data else 'false'
-        new_value = 'false' if current_value == 'true' else 'true'
+        settings_response = supabase.table('renewal_settings').select('is_open').eq('id', 1).execute()
+        current_value = settings_response.data[0]['is_open'] if settings_response.data else False
+        new_value = not current_value
         
-        supabase.table('system_settings').update({'setting_value': new_value, 'updated_at': datetime.now().isoformat()}).eq('setting_key', 'renewal_open').execute()
+        supabase.table('renewal_settings').update({'is_open': new_value, 'updated_at': datetime.now().isoformat()}).eq('id', 1).execute()
         
         status = "opened" if new_value == 'true' else "closed"
         flash(f"Renewal applications have been {status}.", "success")
