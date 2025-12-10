@@ -35,11 +35,11 @@ CREATE TABLE application (
     year_applied INT NOT NULL,
     reason TEXT,
     scholarship_type VARCHAR(45),
-    school_id VARCHAR(255),
-    id_picture VARCHAR(255),
-    birth_certificate VARCHAR(255),
-    grades VARCHAR(255),
-    cor VARCHAR(255),
+    school_id_path VARCHAR(255),
+    id_picture_path VARCHAR(255),
+    birth_certificate_path VARCHAR(255),
+    grades_path VARCHAR(255),
+    cor_path VARCHAR(255),
     status VARCHAR(20) CHECK (status IN ('pending', 'approved', 'rejected', 'renewal')) DEFAULT 'pending' NOT NULL,
     archived BOOLEAN DEFAULT FALSE,
     submission_date TIMESTAMP DEFAULT NOW(),
@@ -47,33 +47,6 @@ CREATE TABLE application (
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
--- Create renew table (user_id changed to INT)
-CREATE TABLE renew (
-    renewal_id SERIAL PRIMARY KEY,
-    application_id INT NOT NULL,
-    user_id INT,
-    student_id VARCHAR(100),
-    first_name VARCHAR(50),
-    middle_name VARCHAR(50),
-    last_name VARCHAR(50),
-    contact_number VARCHAR(50),
-    address VARCHAR(500),
-    municipality VARCHAR(50),
-    baranggay VARCHAR(45),
-    course VARCHAR(255),
-    year_level VARCHAR(50),
-    gwa DECIMAL(3,2),
-    reason TEXT,
-    school_id VARCHAR(255),
-    id_picture VARCHAR(255),
-    birth_certificate VARCHAR(255),
-    grades VARCHAR(255),
-    cor VARCHAR(255),
-    status VARCHAR(50) DEFAULT 'Pending',
-    archived BOOLEAN DEFAULT FALSE,
-    submission_date TIMESTAMP DEFAULT NOW(),
-    FOREIGN KEY (application_id) REFERENCES application(application_id) ON DELETE CASCADE
-);
 
 CREATE TABLE renewal_settings (
   id INT PRIMARY KEY DEFAULT 1,
@@ -319,7 +292,109 @@ FROM users u
 WHERE u.user_id BETWEEN 9 AND 157;
 
 
--- Create 150 renewals for each application generated
+ALTER TABLE application 
+  RENAME COLUMN school_id TO school_id_path;
+
+ALTER TABLE application 
+  RENAME COLUMN id_picture TO id_picture_path;
+
+ALTER TABLE application 
+  RENAME COLUMN birth_certificate TO birth_certificate_path;
+
+ALTER TABLE application 
+  RENAME COLUMN grades TO grades_path;
+
+ALTER TABLE application 
+  RENAME COLUMN cor TO cor_path;
+
+-- Rename columns in renew table
+ALTER TABLE renew 
+  RENAME COLUMN school_id TO school_id_path;
+
+ALTER TABLE renew 
+  RENAME COLUMN id_picture TO id_picture_path;
+
+ALTER TABLE renew 
+  RENAME COLUMN birth_certificate TO birth_certificate_path;
+
+ALTER TABLE renew 
+  RENAME COLUMN grades TO grades_path;
+
+ALTER TABLE renew 
+  RENAME COLUMN cor TO cor_path;
+
+SELECT application_id, school_id_path, id_picture_path, birth_certificate_path, grades_path 
+FROM application 
+ORDER BY submission_date DESC 
+LIMIT 5;
+
+UPDATE application 
+SET 
+  school_id_path = 'https://your-project.supabase.co/storage/v1/object/public/scholarship_bucket/' || student_id || '/school_id.jpg',
+  id_picture_path = 'https://your-project.supabase.co/storage/v1/object/public/scholarship_bucket/' || student_id || '/id_picture.jpg',
+  birth_certificate_path = 'https://your-project.supabase.co/storage/v1/object/public/scholarship_bucket/' || student_id || '/birth_cert.jpg',
+  grades_path = 'https://your-project.supabase.co/storage/v1/object/public/scholarship_bucket/' || student_id || '/grades.jpg'
+WHERE school_id_path IS NULL OR school_id_path = '';
+
+UPDATE renew 
+SET 
+  school_id_path = 'https://your-project.supabase.co/storage/v1/object/public/scholarship_bucket/' || student_id || '/school_id.jpg',
+  id_picture_path = 'https://your-project.supabase.co/storage/v1/object/public/scholarship_bucket/' || student_id || '/id_picture.jpg',
+  birth_certificate_path = 'https://your-project.supabase.co/storage/v1/object/public/scholarship_bucket/' || student_id || '/birth_cert.jpg',
+  grades_path = 'https://your-project.supabase.co/storage/v1/object/public/scholarship_bucket/' || student_id || '/grades.jpg',
+  cor_path = 'https://your-project.supabase.co/storage/v1/object/public/scholarship_bucket/' || student_id || '/cor.jpg'
+WHERE school_id_path IS NULL OR school_id_path = '';
+
+DROP POLICY IF EXISTS "Public Access" ON storage.objects;
+
+CREATE POLICY "Public Access"
+ON storage.objects FOR ALL
+TO public
+USING (bucket_id = 'scholarship_bucket')
+WITH CHECK (bucket_id = 'scholarship_bucket');
+
+ALTER TABLE application DROP CONSTRAINT application_student_id_key;
+
+DELETE FROM renew;
+ALTER SEQUENCE renew_renewal_id_seq RESTART WITH 1;
+
+
+-- Recreate renew table
+CREATE TABLE renew (
+    renewal_id SERIAL PRIMARY KEY,
+    application_id INT NOT NULL,
+    user_id INT,
+    student_id VARCHAR(100),
+    first_name VARCHAR(50),
+    middle_name VARCHAR(50),
+    last_name VARCHAR(50),
+    contact_number VARCHAR(50),
+    address VARCHAR(500),
+    municipality VARCHAR(50),
+    baranggay VARCHAR(45),
+    course VARCHAR(255),
+    year_level VARCHAR(50),
+    gwa DECIMAL(3,2),
+    reason TEXT,
+    school_id_path VARCHAR(255),
+    id_picture_path VARCHAR(255),
+    birth_certificate_path VARCHAR(255),
+    grades_path VARCHAR(255),
+    cor_path VARCHAR(255),
+    status VARCHAR(50) DEFAULT 'Pending',
+    archived BOOLEAN DEFAULT FALSE,
+    submission_date TIMESTAMP DEFAULT NOW(),
+    FOREIGN KEY (application_id) REFERENCES application(application_id) ON DELETE CASCADE
+);
+
+-- Enable RLS
+ALTER TABLE "public"."renew" ENABLE ROW LEVEL SECURITY;
+
+-- Create policy
+CREATE POLICY "Enable all for renew" ON "public"."renew"
+FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+-- Insert renewals
 INSERT INTO renew (
     application_id,
     user_id,
@@ -335,11 +410,11 @@ INSERT INTO renew (
     year_level,
     gwa,
     reason,
-    school_id,
-    id_picture,
-    birth_certificate,
-    grades,
-    cor,
+    school_id_path,
+    id_picture_path,
+    birth_certificate_path,
+    grades_path,
+    cor_path,
     status
 )
 SELECT
@@ -357,11 +432,11 @@ SELECT
     '3rd Year',
     ROUND((RANDOM() * (1.75 - 1.25) + 1.25)::numeric, 2),
     'Sample renewal justification.',
-    a.school_id,
-    'renew_id_pic_' || a.application_id || '.jpg',
-    'renew_birth_cert_' || a.application_id || '.pdf',
-    'renew_grades_' || a.application_id || '.pdf',
-    'renew_cor_' || a.application_id || '.pdf',
+    'https://your-project.supabase.co/storage/v1/object/public/scholarship_bucket/' || a.student_id || '/school_id.jpg',
+    'https://your-project.supabase.co/storage/v1/object/public/scholarship_bucket/' || a.student_id || '/id_picture.jpg',
+    'https://your-project.supabase.co/storage/v1/object/public/scholarship_bucket/' || a.student_id || '/birth_cert.jpg',
+    'https://your-project.supabase.co/storage/v1/object/public/scholarship_bucket/' || a.student_id || '/grades.jpg',
+    'https://your-project.supabase.co/storage/v1/object/public/scholarship_bucket/' || a.student_id || '/cor.jpg',
     'Pending'
 FROM application a
 WHERE a.user_id BETWEEN 9 AND 157;

@@ -496,11 +496,11 @@
                                 '{{ app.scholarship_type }}',
                                 '{{ app.status }}',
                                 '{{ date_str }}',
-                                '{{ app.school_id }}',
-                                '{{ app.id_picture }}',
-                                '{{ app.birth_certificate }}',
-                                '{{ app.grades }}',
-                                '{{ app.cor }}'
+                                '{{ app.school_id_path }}',
+                                '{{ app.id_picture_path }}',
+                                '{{ app.birth_certificate_path }}',
+                                '{{ app.grades_path }}',
+                                '{{ app.cor_path }}'
                             )"
                         >View</button>
                         
@@ -565,7 +565,7 @@
                 <tbody>
                     {% for renewal in renewals %}
                     <tr>
-                        <td>#{{ renewal.application_id }}</td>
+                        <td>#{{ renewal.renewal_id }}</td>
                         <td>{{ renewal.first_name }}</td>
                         <td>{{ renewal.middle_name or '-' }}</td>
                         <td>{{ renewal.last_name }}</td>
@@ -582,7 +582,7 @@
                         <td style="white-space: nowrap;">
                             {% set renewal_date = renewal.submission_date.strftime('%B %d, %Y') if renewal.submission_date else 'N/A' %}
                             <button class="btn-sm btn-view" onclick="viewRenewalDetails(
-                                '{{ renewal.application_id }}',
+                                '{{ renewal.renewal_id }}',
                                 '{{ renewal.first_name|e }}',
                                 '{{ renewal.middle_name|e }}',
                                 '{{ renewal.last_name|e }}',
@@ -594,14 +594,14 @@
                                 '{{ renewal.reason|e }}',
                                 '{{ renewal.status }}',
                                 '{{ renewal_date }}',
-                                '{{ renewal.school_id }}',
-                                '{{ renewal.id_picture }}',
-                                '{{ renewal.birth_certificate }}',
-                                '{{ renewal.grades }}',
-                                '{{ renewal.cor }}'
+                                '{{ renewal.school_id_path }}',
+                                '{{ renewal.id_picture_path }}',
+                                '{{ renewal.birth_certificate_path }}',
+                                '{{ renewal.grades_path }}',
+                                '{{ renewal.cor_path }}'
                             )">View</button>
                             
-                            <form method="POST" action="{{ url_for('unarchive_renewal', renewal_id=renewal.application_id) }}" style="display:inline;" onsubmit="return confirm('Restore this renewal to active records?');">
+                            <form method="POST" action="{{ url_for('unarchive_renewal', renewal_id=renewal.renewal_id) }}" style="display:inline;" onsubmit="return confirm('Restore this renewal to active records?');">
                                 <button type="submit" class="btn-sm" style="background:#48bb78; color:white; margin-left:5px;">Unarchive</button>
                             </form>
                         </td>
@@ -653,7 +653,7 @@
                 <tbody>
                     {% for renewal in renewals %}
                     <tr data-status="{{ renewal.status|lower }}">
-                        <td>#{{ renewal.application_id }}</td>
+                        <td>#{{ renewal.renewal_id }}</td>
                         <td>{{ renewal.first_name }}</td>
                         <td>{{ renewal.middle_name or '-' }}</td>
                         <td>{{ renewal.last_name }}</td>
@@ -670,7 +670,7 @@
                         <td style="white-space: nowrap;">
                             {% set renewal_date2 = renewal.submission_date.strftime('%B %d, %Y') if renewal.submission_date else 'N/A' %}
                             <button class="btn-sm btn-view" onclick="viewRenewalDetails(
-                                '{{ renewal.application_id }}',
+                                '{{ renewal.renewal_id }}',
                                 '{{ renewal.first_name|e }}',
                                 '{{ renewal.middle_name|e }}',
                                 '{{ renewal.last_name|e }}',
@@ -682,14 +682,14 @@
                                 '{{ renewal.reason|e }}',
                                 '{{ renewal.status }}',
                                 '{{ renewal_date2 }}',
-                                '{{ renewal.school_id }}',
-                                '{{ renewal.id_picture }}',
-                                '{{ renewal.birth_certificate }}',
-                                '{{ renewal.grades }}',
-                                '{{ renewal.cor }}'
+                                '{{ renewal.school_id_path }}',
+                                '{{ renewal.id_picture_path }}',
+                                '{{ renewal.birth_certificate_path }}',
+                                '{{ renewal.grades_path }}',
+                                '{{ renewal.cor_path }}'
                             )">View</button>
                             
-                            <form method="POST" action="{{ url_for('archive_renewal', renewal_id=renewal.application_id) }}" style="display:inline;" onsubmit="return confirm('Are you sure you want to archive this renewal?');">
+                            <form method="POST" action="{{ url_for('archive_renewal', renewal_id=renewal.renewal_id) }}" style="display:inline;" onsubmit="return confirm('Are you sure you want to archive this renewal?');">
                                 <button type="submit" class="btn-sm" style="background:#ff9800; color:white; margin-left:5px;">Archive</button>
                             </form>
                         </td>
@@ -860,19 +860,19 @@ function viewDetails(id, firstName, middleName, lastName, sid, course, year, gwa
 
         <div class="detail-row"><strong>📎 Documents:</strong></div>
         <div class="detail-row" style="margin-left:15px;">
-            <p>🆔 <a href="/static/uploads/${schoolId}" target="_blank">School ID</a></p>
+            <p>🆔 <a href="${schoolId}" target="_blank">School ID</a></p>
         </div>
         <div class="detail-row" style="margin-left:15px;">
-            <p>📷 <a href="/static/uploads/${idPic}" target="_blank">2x2 ID Picture</a></p>
+            <p>📷 <a href="${idPic}" target="_blank">2x2 ID Picture</a></p>
         </div>
         <div class="detail-row" style="margin-left:15px;">
-            <p>📋 <a href="/static/uploads/${birth}" target="_blank">Birth Certificate</a></p>
+            <p>📋 <a href="${birth}" target="_blank">Birth Certificate</a></p>
         </div>
         <div class="detail-row" style="margin-left:15px;">
-            <p>📊 <a href="/static/uploads/${grades}" target="_blank">Copy of Grades</a></p>
+            <p>📊 <a href="${grades}" target="_blank">Copy of Grades</a></p>
         </div>
         <div class="detail-row" style="margin-left:15px;">
-            <p>📄 <a href="/static/uploads/${cor}" target="_blank">COR</a></p>
+            <p>📄 <a href="${cor}" target="_blank">COR</a></p>
         </div>
 
         ${showActions ? `
@@ -1006,21 +1006,21 @@ function viewRenewalDetails(id, firstName, middleName, lastName, sid, course, ye
             <p style="background:#f7f7f7; padding:12px; border-radius:8px; margin-top:5px;">${reason}</p>
         </div>
 
-        <div class="detail-row"><strong>Documents:</strong></div>
+        <div class="detail-row"><strong>📎 Documents:</strong></div>
         <div class="detail-row" style="margin-left:15px;">
-            <p>School ID: <a href="/static/uploads/${schoolId}" target="_blank">View</a></p>
+            <p>🆔 <a href="${schoolId}" target="_blank">School ID</a></p>
         </div>
         <div class="detail-row" style="margin-left:15px;">
-            <p>2x2 ID Picture: <a href="/static/uploads/${idPic}" target="_blank">View</a></p>
+            <p>📷 <a href="${idPic}" target="_blank">2x2 ID Picture</a></p>
         </div>
         <div class="detail-row" style="margin-left:15px;">
-            <p>Birth Certificate: <a href="/static/uploads/${birth}" target="_blank">View</a></p>
+            <p>📋 <a href="${birth}" target="_blank">Birth Certificate</a></p>
         </div>
         <div class="detail-row" style="margin-left:15px;">
-            <p>Copy of Grades: <a href="/static/uploads/${grades}" target="_blank">View</a></p>
+            <p>📊 <a href="${grades}" target="_blank">Copy of Grades</a></p>
         </div>
         <div class="detail-row" style="margin-left:15px;">
-            <p>COR: <a href="/static/uploads/${cor}" target="_blank">View</a></p>
+            <p>📄 <a href="${cor}" target="_blank">COR</a></p>
         </div>
 
         ${showActions ? `

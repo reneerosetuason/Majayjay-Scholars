@@ -16,15 +16,30 @@ app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'ren02')
 
 # ================== FILE UPLOAD SETTINGS ==================
-UPLOAD_FOLDER = os.getenv('UPLOAD_FOLDER', 'static/uploads')
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'pdf'}
-
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
+SUPABASE_BUCKET = 'scholarship_bucket'
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def upload_to_supabase(file, student_id, field_name):
+    """Upload file to Supabase Storage and return the public URL"""
+    try:
+        ext = file.filename.rsplit('.', 1)[1].lower()
+        file_path = f"{student_id}/{field_name}.{ext}"
+        file_bytes = file.read()
+        
+        supabase.storage.from_(SUPABASE_BUCKET).upload(
+            path=file_path,
+            file=file_bytes,
+            file_options={"content-type": file.content_type, "upsert": True}
+        )
+        
+        public_url = supabase.storage.from_(SUPABASE_BUCKET).get_public_url(file_path)
+        return public_url
+    except Exception as e:
+        print(f"[ERROR] Upload to Supabase failed: {e}")
+        raise
 
 # ================== SUPABASE CONNECTION ==================
 supabase_url = os.getenv('SUPABASE_URL')
@@ -215,6 +230,12 @@ def send_code():
             print("[DEBUG] ❌ No email provided")
             return jsonify({'status': 'error', 'message': 'Email is required'}), 400
 
+        # Check if email already exists
+        existing = supabase.table('users').select('email').eq('email', email).execute()
+        if existing.data:
+            print(f"[DEBUG] ❌ Email already registered: {email}")
+            return jsonify({'status': 'error', 'message': 'Email already registered. Please use a different email.'}), 400
+
         code = f"{random.randint(100000, 999999)}"
         print(f"[DEBUG] Generated code: {code}")
 
@@ -358,7 +379,16 @@ def register():
             flash("Passwords do not match!", "error")
             return redirect(url_for('register'))
 
+        if len(password) < 6:
+            flash("Password must be at least 6 characters long.", "error")
+            return redirect(url_for('register'))
+
         try:
+            existing = supabase.table('users').select('email').eq('email', email).execute()
+            if existing.data:
+                flash("Email already registered. Please use a different email.", "error")
+                return redirect(url_for('register'))
+            
             response = supabase.table('users').insert({
                 'email': email,
                 'password': password,
@@ -527,13 +557,12 @@ def apply():
             for field in ['school_id', 'id_picture', 'birth_certificate', 'grades', 'cor']:
                 file = request.files.get(field)
                 if file and file.filename and allowed_file(file.filename):
-                    filename = secure_filename(file.filename)
-                    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-                    name, ext = os.path.splitext(filename)
-                    filename = f"{name}_{timestamp}{ext}"
-                    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                    file.save(filepath)
-                    uploaded_files[field] = filename
+                    try:
+                        public_url = upload_to_supabase(file, student_id, field)
+                        uploaded_files[f"{field}_path"] = public_url
+                    except Exception as e:
+                        flash(f"Error uploading {field.replace('_', ' ').title()}: {str(e)}", "error")
+                        return render_template('student/apply.html', user_info=user_info)
                 else:
                     flash(f"Please upload a valid file for {field.replace('_', ' ').title()}", "error")
                     return render_template('student/apply.html', user_info=user_info)
@@ -555,11 +584,11 @@ def apply():
                     'gwa': float(gwa),
                     'year_applied': int(year_applied),
                     'reason': reason,
-                    'school_id': uploaded_files['school_id'],
-                    'id_picture': uploaded_files['id_picture'],
-                    'birth_certificate': uploaded_files['birth_certificate'],
-                    'grades': uploaded_files['grades'],
-                    'cor': uploaded_files['cor'],
+                    'school_id_path': uploaded_files['school_id_path'],
+                    'id_picture_path': uploaded_files['id_picture_path'],
+                    'birth_certificate_path': uploaded_files['birth_certificate_path'],
+                    'grades_path': uploaded_files['grades_path'],
+                    'cor_path': uploaded_files['cor_path'],
                     'scholarship_type': 'new'
                 }).execute()
                 
@@ -629,13 +658,16 @@ def renew():
             uploaded_files = {}
             for field in ['school_id', 'id_picture', 'birth_certificate', 'grades', 'cor']:
                 file = request.files.get(field)
-                if file and allowed_file(file.filename):
-                    filename = secure_filename(file.filename)
-                    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                    file.save(filepath)
-                    uploaded_files[field] = filename
+                if file and file.filename and allowed_file(file.filename):
+                    try:
+                        public_url = upload_to_supabase(file, student_id, field)
+                        uploaded_files[f"{field}_path"] = public_url
+                    except Exception as e:
+                        flash(f"Error uploading {field.replace('_', ' ').title()}: {str(e)}", "error")
+                        return redirect(url_for('renew'))
                 else:
-                    uploaded_files[field] = None
+                    flash(f"Please upload a valid file for {field.replace('_', ' ').title()}", "error")
+                    return redirect(url_for('renew'))
 
             try:
                 supabase.table('renew').insert({
@@ -650,11 +682,11 @@ def renew():
                     'year_level': year_level,
                     'gwa': float(gwa),
                     'reason': reason,
-                    'school_id': uploaded_files['school_id'],
-                    'id_picture': uploaded_files['id_picture'],
-                    'birth_certificate': uploaded_files['birth_certificate'],
-                    'grades': uploaded_files['grades'],
-                    'cor': uploaded_files['cor'],
+                    'school_id_path': uploaded_files['school_id_path'],
+                    'id_picture_path': uploaded_files['id_picture_path'],
+                    'birth_certificate_path': uploaded_files['birth_certificate_path'],
+                    'grades_path': uploaded_files['grades_path'],
+                    'cor_path': uploaded_files['cor_path'],
                     'first_name': first_name,
                     'middle_name': middle_name,
                     'last_name': last_name,
@@ -728,17 +760,23 @@ def edit_application(app_id):
     
     try:
         if request.method == 'POST':
+            if app_type == 'renewal':
+                existing_response = supabase.table('renew').select('student_id').eq('renewal_id', app_id).execute()
+            else:
+                existing_response = supabase.table('application').select('student_id').eq('application_id', app_id).execute()
+            
+            existing_student_id = existing_response.data[0]['student_id'] if existing_response.data else None
+            
             uploaded_files = {}
             for field in ['school_id', 'id_picture', 'birth_certificate', 'grades', 'cor']:
                 file = request.files.get(field)
-                if file and file.filename and allowed_file(file.filename):
-                    filename = secure_filename(file.filename)
-                    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-                    name, ext = os.path.splitext(filename)
-                    filename = f"{name}_{timestamp}{ext}"
-                    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                    file.save(filepath)
-                    uploaded_files[field] = filename
+                if file and file.filename and allowed_file(file.filename) and existing_student_id:
+                    try:
+                        public_url = upload_to_supabase(file, existing_student_id, field)
+                        uploaded_files[f"{field}_path"] = public_url
+                    except Exception as e:
+                        flash(f"Error uploading {field.replace('_', ' ').title()}: {str(e)}", "error")
+                        return redirect(url_for('edit_application', app_id=app_id, type=app_type))
             
             update_data = {}
             for key in ['student_id', 'contact_number', 'course', 'year_level', 'gwa', 'reason']:
@@ -1133,7 +1171,7 @@ def toggle_renewal():
         
         supabase.table('renewal_settings').update({'is_open': new_value, 'updated_at': datetime.now().isoformat()}).eq('id', 1).execute()
         
-        status = "opened" if new_value == 'true' else "closed"
+        status = "opened" if new_value else "closed"
         flash(f"Renewal applications have been {status}.", "success")
     except Exception as e:
         print(f"[ERROR] Toggle renewal error: {e}")
