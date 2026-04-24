@@ -32,7 +32,7 @@ def upload_to_supabase(file, student_id, field_name):
         supabase.storage.from_(SUPABASE_BUCKET).upload(
             path=file_path,
             file=file_bytes,
-            file_options={"content-type": file.content_type, "upsert": True}
+            file_options={"content-type": file.content_type, "upsert": "true"}
         )
         
         public_url = supabase.storage.from_(SUPABASE_BUCKET).get_public_url(file_path)
@@ -366,6 +366,14 @@ def register():
         middle_name = request.form.get('middle_name')
         last_name = request.form.get('last_name')
         email_verified = request.form.get('email_verified')
+
+        print(f"\n[DEBUG] Registration attempt:")
+        print(f"  Email: {email}")
+        print(f"  Password: {repr(password)}")
+        print(f"  Confirm: {repr(confirm)}")
+        print(f"  First name: {first_name}")
+        print(f"  Last name: {last_name}")
+        print(f"  Email verified: {email_verified}")
 
         if not all([email, password, confirm, first_name, last_name]):
             flash("Please fill out all required fields.", "error")
