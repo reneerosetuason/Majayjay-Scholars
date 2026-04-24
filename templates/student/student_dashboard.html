@@ -246,8 +246,16 @@
                 <div class="scholarship-card">
                     <div class="icon">🔄</div>
                     <h3>Renew</h3>
-                    <p>Renew Scholarship</p>
-                    <a href="/renew" class="action-btn">Renew Now</a>
+                    {% if not has_approved_application %}
+                        <p style="color: #f56565; font-weight: 600;">⚠️ You must have an approved application first</p>
+                        <button class="action-btn" style="background: #cbd5e0; cursor: not-allowed; box-shadow: none;" disabled>Not Eligible</button>
+                    {% elif not renewal_open %}
+                        <p style="color: #f56565; font-weight: 600;">⚠️ Renewals are currently closed</p>
+                        <button class="action-btn" style="background: #cbd5e0; cursor: not-allowed; box-shadow: none;" disabled>Closed</button>
+                    {% else %}
+                        <p>Renew your scholarship application</p>
+                        <a href="/renew" class="action-btn">Renew Now</a>
+                    {% endif %}
                 </div>
 
                 <!-- My Applications Card -->

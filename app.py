@@ -30,7 +30,7 @@ db = mysql.connector.connect(
     host="localhost",
     user="root",
     password="ren123",
-    database="usersdb"
+    database="majayjay_scholars"
 )
 
 # ==================== EMAIL VERIFICATION SETUP ====================
@@ -477,6 +477,11 @@ def login():
 # ---------- MAYOR DASHBOARD ----------
 @app.route('/mayor')
 def mayor_dashboard():
+    print(f"\n[DEBUG] Mayor dashboard accessed")
+    print(f"[DEBUG] Session user_type: {repr(session.get('user_type'))}")
+    print(f"[DEBUG] Session user_type (lower): {repr(session.get('user_type', '').lower())}")
+    print(f"[DEBUG] Check result: {session.get('user_type', '').lower() != 'mayor'}\n")
+    
     if session.get('user_type', '').lower() != 'mayor':
         flash("Access denied!", "error")
         return redirect(url_for('login'))
@@ -503,6 +508,12 @@ def mayor_dashboard():
         WHERE archived = FALSE OR archived IS NULL
     """)
     renewals = cursor.fetchall()
+    
+    # Get renewal status
+    cursor.execute("SELECT is_open FROM renewal_settings WHERE id = 1")
+    renewal_setting = cursor.fetchone()
+    renewal_open = renewal_setting['is_open'] if renewal_setting else False
+    
     cursor.close()
     
     # Filter new applications only
@@ -511,7 +522,8 @@ def mayor_dashboard():
     return render_template('mayor/mayor_dashboard.html', 
                          name=name, 
                          new_applications=new_apps, 
-                         renewals=renewals)
+                         renewals=renewals,
+                         renewal_open=renewal_open)
 
 #===================admin dashboard===================
 @app.route('/admin')
@@ -549,12 +561,30 @@ def student_dashboard():
         cursor.execute("SELECT first_name FROM users WHERE user_id = %s", (session['user_id'],))
         current_student = cursor.fetchone()
         
+        # Check if renewals are open
+        cursor.execute("SELECT is_open FROM renewal_settings WHERE id = 1")
+        renewal_setting = cursor.fetchone()
+        renewal_open = renewal_setting['is_open'] if renewal_setting else False
+        
+        # Check if student has an approved application
+        cursor.execute("""
+            SELECT status FROM application 
+            WHERE user_id = %s 
+            ORDER BY submission_date DESC 
+            LIMIT 1
+        """, (session['user_id'],))
+        app_status = cursor.fetchone()
+        has_approved_application = app_status and app_status['status'] == 'approved'
+        
         cursor.close()
 
         # Get student name or email as fallback
         first_name = current_student['first_name'] if current_student and current_student.get('first_name') else session.get('email', 'Student')
         
-        return render_template('student/student_dashboard.html', first_name=first_name)
+        return render_template('student/student_dashboard.html', 
+                             first_name=first_name, 
+                             renewal_open=renewal_open,
+                             has_approved_application=has_approved_application)
 
     flash("Access denied!", "error")
     return redirect(url_for('login'))
@@ -657,7 +687,7 @@ def apply():
                     user_id, first_name, middle_name, last_name, student_id, 
                     contact_number, address, municipality, baranggay, school_name, 
                     course, year_level, gwa, year_applied, reason, 
-                    school_id, id_picture, birth_certificate, grades, cor, scholarship_type
+                    school_id_path, id_picture_path, birth_certificate_path, grades_path, cor_path, scholarship_type
                 ) VALUES (
                     %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
                     %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
@@ -699,6 +729,44 @@ def renew():
 
     cursor = db.cursor(dictionary=True)
     
+    # Check if renewals are open
+    cursor.execute("SELECT is_open FROM renewal_settings WHERE id = 1")
+    renewal_setting = cursor.fetchone()
+    
+    if not renewal_setting or not renewal_setting['is_open']:
+        cursor.close()
+        flash("Renewal applications are currently closed. Please check back later.", "error")
+        return redirect(url_for('student_dashboard'))
+    
+    # Check if user has an approved application
+    cursor.execute("""
+        SELECT status FROM application 
+        WHERE user_id = %s 
+        ORDER BY submission_date DESC 
+        LIMIT 1
+    """, (session['user_id'],))
+    app_status = cursor.fetchone()
+    
+    if not app_status:
+        cursor.close()
+        flash("You must have an approved scholarship application before you can renew. Please apply first.", "error")
+        return redirect(url_for('student_dashboard'))
+    
+    if app_status['status'] == 'rejected':
+        cursor.close()
+        flash("Your scholarship application was rejected. You cannot renew a rejected application. Please submit a new application instead.", "error")
+        return redirect(url_for('student_dashboard'))
+    
+    if app_status['status'] == 'pending':
+        cursor.close()
+        flash("Your scholarship application is still pending. You can only renew after your application has been approved.", "error")
+        return redirect(url_for('student_dashboard'))
+    
+    if app_status['status'] != 'approved':
+        cursor.close()
+        flash("Only students with approved scholarship applications can apply for renewal.", "error")
+        return redirect(url_for('student_dashboard'))
+    
     # Check if user already submitted a renewal
     cursor.execute("""
         SELECT COUNT(*) as count FROM renew WHERE user_id = %s
@@ -710,26 +778,12 @@ def renew():
         flash("You have already submitted a renewal application.", "error")
         return redirect(url_for('student_dashboard'))
     
-    # Check if user's application was rejected
-    cursor.execute("""
-        SELECT status FROM application 
-        WHERE user_id = %s 
-        ORDER BY submission_date DESC 
-        LIMIT 1
-    """, (session['user_id'],))
-    app_status = cursor.fetchone()
-    
-    if app_status and app_status['status'] == 'rejected':
-        cursor.close()
-        flash("You cannot renew a rejected application. Please submit a new application.", "error")
-        return redirect(url_for('student_dashboard'))
-    
     # Fetch existing application data for autofill
     cursor.execute("""
         SELECT a.first_name, a.middle_name, a.last_name, a.address, 
                a.municipality, a.baranggay, a.application_id
         FROM application a
-        WHERE a.user_id = %s
+        WHERE a.user_id = %s AND a.status = 'approved'
         ORDER BY a.submission_date DESC
         LIMIT 1
     """, (session['user_id'],))
@@ -752,9 +806,6 @@ def renew():
             year_level = request.form.get('year_level')
             gwa = request.form.get('gwa')
             reason = request.form.get('reason')
-            first_name = request.form.get('first_name')
-            middle_name = request.form.get('middle_name')
-            last_name = request.form.get('last_name')
 
             uploaded_files = {}
             for field in ['school_id', 'id_picture', 'birth_certificate', 'grades', 'cor']:
@@ -773,7 +824,7 @@ def renew():
                     renewal_id, application_id, user_id, student_id, contact_number, 
                     address, baranggay, municipality,
                     course, year_level, gwa, reason,
-                    school_id, id_picture, birth_certificate, grades, cor,
+                    school_id_path, id_picture_path, birth_certificate_path, grades_path, cor_path,
                     first_name, middle_name, last_name,
                     status, submission_date
                 ) VALUES (NULL, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'Pending', NOW())
@@ -799,7 +850,7 @@ def renew():
             return redirect(url_for('renew'))
 
     if not app_data:
-        flash("No previous application found. Please apply first.", "error")
+        flash("No approved application found. Please ensure your application is approved before renewing.", "error")
         return redirect(url_for('student_dashboard'))
     
     return render_template('student/renew.html', app_data=app_data)
@@ -830,11 +881,11 @@ def my_applications():
             a.gwa,
             a.reason,
             a.scholarship_type,
-            a.school_id,
-            a.id_picture,
-            a.birth_certificate,
-            a.grades,
-            a.cor,
+            a.school_id_path,
+            a.id_picture_path,
+            a.birth_certificate_path,
+            a.grades_path,
+            a.cor_path,
             a.status,
             a.submission_date,
             a.updated_at,
@@ -862,11 +913,11 @@ def my_applications():
             r.gwa,
             r.reason,
             NULL as scholarship_type,
-            r.school_id,
-            r.id_picture,
-            r.birth_certificate,
-            r.grades,
-            r.cor,
+            r.school_id_path,
+            r.id_picture_path,
+            r.birth_certificate_path,
+            r.grades_path,
+            r.cor_path,
             r.status,
             r.submission_date,
             r.submission_date as updated_at,
@@ -982,6 +1033,7 @@ def mayor_records():
         return redirect(url_for('login'))
 
     show_archived = request.args.get('archived', 'false').lower() == 'true'
+    section = request.args.get('section', 'applications')
     cursor = db.cursor(dictionary=True)
 
     # Fetch regular applications
@@ -1006,11 +1058,11 @@ def mayor_records():
             a.year_applied,
             a.reason,
             a.scholarship_type,
-            a.school_id,
-            a.id_picture,
-            a.birth_certificate,
-            a.grades,
-            a.cor,
+            a.school_id_path,
+            a.id_picture_path,
+            a.birth_certificate_path,
+            a.grades_path,
+            a.cor_path,
             a.status,
             a.archived,
             a.submission_date,
@@ -1032,7 +1084,7 @@ def mayor_records():
     
     cursor.execute(f"""
         SELECT 
-            r.renewal_id as application_id,
+            r.renewal_id,
             r.user_id,
             r.student_id,
             r.contact_number,
@@ -1043,11 +1095,11 @@ def mayor_records():
             r.year_level,
             r.gwa,
             r.reason,
-            r.school_id,
-            r.id_picture,
-            r.birth_certificate,
-            r.grades,
-            r.cor,
+            r.school_id_path,
+            r.id_picture_path,
+            r.birth_certificate_path,
+            r.grades_path,
+            r.cor_path,
             r.status,
             r.submission_date,
             r.first_name,
@@ -1059,10 +1111,22 @@ def mayor_records():
         ORDER BY r.submission_date DESC
     """)
     renewals = cursor.fetchall()
+    
+    # Get archived count
+    cursor.execute("SELECT COUNT(*) as count FROM application WHERE archived = TRUE")
+    archived_apps = cursor.fetchone()['count']
+    cursor.execute("SELECT COUNT(*) as count FROM renew WHERE archived = TRUE")
+    archived_renewals = cursor.fetchone()['count']
+    archived_count = archived_apps + archived_renewals
+    
     cursor.close()
 
-    section = request.args.get('section', 'applications')
-    return render_template('mayor/mayor_records.html', applications=applications, renewals=renewals, show_archived=show_archived, section=section)
+    return render_template('mayor/mayor_records.html', 
+                         applications=applications, 
+                         renewals=renewals, 
+                         show_archived=show_archived, 
+                         section=section,
+                         archived_count=archived_count)
 
 #================approve renewal==================
 @app.route('/mayor/approve_renewal/<int:renewal_id>', methods=['POST'])
@@ -1319,6 +1383,38 @@ def reject_application(application_id):
         cursor.close()
     
     return redirect(url_for('mayor_records'))
+#================toggle renewal==================
+@app.route('/mayor/toggle_renewal', methods=['POST'])
+def toggle_renewal():
+    if session.get('user_type', '').lower() != 'mayor':
+        flash("Access denied!", "error")
+        return redirect(url_for('login'))
+    
+    cursor = db.cursor(dictionary=True)
+    try:
+        # Check if renewal_settings exists
+        cursor.execute("SELECT is_open FROM renewal_settings WHERE id = 1")
+        result = cursor.fetchone()
+        
+        if result:
+            # Toggle the current state
+            new_state = not result['is_open']
+            cursor.execute("UPDATE renewal_settings SET is_open = %s WHERE id = 1", (new_state,))
+        else:
+            # Create initial record if it doesn't exist
+            cursor.execute("INSERT INTO renewal_settings (id, is_open) VALUES (1, TRUE)")
+        
+        db.commit()
+        flash("Renewal status updated successfully!", "success")
+    except Exception as e:
+        print(f"Error toggling renewal: {e}")
+        db.rollback()
+        flash("Error updating renewal status.", "error")
+    finally:
+        cursor.close()
+    
+    return redirect(url_for('mayor_dashboard'))
+
 #==============mayor scholars++++++++++++
 @app.route('/mayor/scholars')
 def mayor_scholars():
@@ -1341,10 +1437,10 @@ def mayor_scholars():
             a.gwa,
             a.year_applied,
             a.reason,
-            a.school_id,
-            a.id_picture,
-            a.birth_certificate,
-            a.grades,
+            a.school_id_path,
+            a.id_picture_path,
+            a.birth_certificate_path,
+            a.grades_path,
             a.status,
             a.submission_date,
             a.scholarship_type,
